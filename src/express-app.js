@@ -1,7 +1,7 @@
 // express-app.js
 const express = require('express');
 const cors = require('cors');
-const { databaseConnection } = require('./database/connection');  // Import correctly
+const { databaseConnection } = require('./database/connection');
 const { AppError, ErrorHandler } = require('./utils/app-errors');
 
 module.exports = async (app) => {
@@ -10,10 +10,11 @@ module.exports = async (app) => {
     app.use(cors());
 
     // Connect to Database
-    await databaseConnection();  // Call the function properly
+    await databaseConnection();
 
     // Routes
-    require('./api/routes/course')(app);
+    require('./api/routes/course')(app);  // Import course routes
+    require('./api/routes/review')(app);  // Import review routes
 
     // Handle 404 Errors
     app.use((req, res, next) => {

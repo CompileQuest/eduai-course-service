@@ -1,58 +1,55 @@
 const CourseService = require('../../services/course-service');
-
+const Course = require('../../models/Course');
 module.exports = (app) => {
     const service = new CourseService();
 
     // Add a new course
-    app.post('/courses/', async (req, res, next) => {
+    app.post('/add-course', async (req, res, next) => {
         try {
-            // Destructuring the request body to extract necessary fields
             const {
                 course_id,
-                title,
-                description,
                 thumbnail_url,
-                enrolled = 0,    // Default value
-                difficulty,
+                introduction,
+                enrolled_number,
+                difficulty_level,
                 price,
-                discount = 0,   // Default value
-                category,
-                requirements = [],  // Default value (empty array)
-                duration,
-                videos = 0,     // Default value
-                articles = 0,   // Default value
-                reviews = [],   // Default value (empty array)
-                faqs = [],      // Default value (empty array)
-                metadata = {}   // Default value (empty object)
-            } = req.body;
-    
-            // Construct the course data object
-            const courseData = {
-                course_id,
-                title,
-                description,
-                thumbnail_url,
-                enrolled,
-                difficulty,
-                price,
-                discount,
-                category,
+                discounted_price,
+                category_id,
                 requirements,
                 duration,
-                videos,
-                articles,
-                reviews,
-                faqs,
+                introduction_video_link,
+                description,
+                transcript,
+                sections,
                 metadata
-            };
+            } = req.body;
     
-            // Call the service to add the course
-            const course = await service.AddCourse(courseData);
+            // Create a new course instance using the provided data
+            const newCourse = new Course({
+                course_id,
+                thumbnail_url,
+                introduction,
+                enrolled_number,
+                difficulty_level,
+                price,
+                discounted_price,
+                category_id,
+                requirements,
+                duration,
+                introduction_video_link,
+                description,
+                transcript,
+                sections,
+                metadata
+            });
     
-            // Respond with the created course
-            res.status(201).json(course);
+            // Save the new course to the database
+            const savedCourse = await newCourse.save();
+    
+            // Respond with the newly created course
+            res.status(201).json(savedCourse);
         } catch (err) {
-            // Pass the error to the error handler
+            // Pass the error to the global error handler
             next(err);
         }
     });
