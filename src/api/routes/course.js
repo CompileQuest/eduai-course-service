@@ -4,14 +4,59 @@ module.exports = (app) => {
     const service = new CourseService();
 
     // Add a new course
-    app.post('/add-course', async (req, res, next) => {
+    app.post('/courses/', async (req, res, next) => {
         try {
-            const course = await service.AddCourse(req.body);
+            // Destructuring the request body to extract necessary fields
+            const {
+                course_id,
+                title,
+                description,
+                thumbnail_url,
+                enrolled = 0,    // Default value
+                difficulty,
+                price,
+                discount = 0,   // Default value
+                category,
+                requirements = [],  // Default value (empty array)
+                duration,
+                videos = 0,     // Default value
+                articles = 0,   // Default value
+                reviews = [],   // Default value (empty array)
+                faqs = [],      // Default value (empty array)
+                metadata = {}   // Default value (empty object)
+            } = req.body;
+    
+            // Construct the course data object
+            const courseData = {
+                course_id,
+                title,
+                description,
+                thumbnail_url,
+                enrolled,
+                difficulty,
+                price,
+                discount,
+                category,
+                requirements,
+                duration,
+                videos,
+                articles,
+                reviews,
+                faqs,
+                metadata
+            };
+    
+            // Call the service to add the course
+            const course = await service.AddCourse(courseData);
+    
+            // Respond with the created course
             res.status(201).json(course);
         } catch (err) {
+            // Pass the error to the error handler
             next(err);
         }
     });
+    
 
     // Get all courses
     app.get('/courses/all', async (req, res, next) => {
