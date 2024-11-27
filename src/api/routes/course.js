@@ -4,11 +4,9 @@ module.exports = (app) => {
     const service = new CourseService();
 
     // Add a new course
-    app.post('/courses/add', async (req, res, next) => {
+    app.post('/add-course', async (req, res, next) => {
         try {
-            const { id, thumbnailUrl, introduction, enrolled, difficulty, price, discount, category, requirements, duration, videos, articles, reviews, faqs, metadata } = req.body;
-            const courseData = { id, thumbnailUrl, introduction, enrolled, difficulty, price, discount, category, requirements, duration, videos, articles, reviews, faqs, metadata };
-            const course = await service.AddCourse(courseData);
+            const course = await service.AddCourse(req.body);
             res.status(201).json(course);
         } catch (err) {
             next(err);
