@@ -13,8 +13,9 @@ module.exports = async (app) => {
     await databaseConnection();
 
     // Routes
-    require('./api/routes/course')(app);  // Import course routes
+    require('./api/routes/course')(app);   // Import course routes
     require('./api/routes/review')(app);  // Import review routes
+    require('./api/routes/section')(app); // Import section routes
 
     // Handle 404 Errors
     app.use((req, res, next) => {
