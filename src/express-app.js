@@ -16,6 +16,8 @@ module.exports = async (app) => {
     require('./api/routes/course')(app);   // Import course routes
     require('./api/routes/review')(app);  // Import review routes
     require('./api/routes/section')(app); // Import section routes
+    require('./api/routes/video')(app);   // Import video routes
+
 
     // Handle 404 Errors
     app.use((req, res, next) => {
