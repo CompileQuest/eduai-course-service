@@ -99,7 +99,7 @@ model Quiz {
 }
 
 model Review {
-  id         Int       @id
+  id                  Int      @id @default(autoincrement())
   course_id  Int?
   user_id    Int?
   rating     Decimal?  @db.Decimal
@@ -109,7 +109,7 @@ model Review {
 }
 
 model Section {
-  id                   Int                    @id
+  id                   Int                    @id @default(autoincrement())
   course_id            Int?
   section_id           String?                @unique @db.VarChar
   section_title        String?                @db.VarChar
@@ -140,7 +140,7 @@ model User_Progress_videos {
 }
 
 model Video {
-  id             Int      @id
+  id             Int       @id @default(autoincrement())
   section_id     Int?
   video_id       String?  @unique @db.VarChar
   video_url      String?  @db.VarChar

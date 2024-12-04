@@ -1,76 +1,69 @@
-const Video = require('../../models/Video');
-const Section = require('../../models/Section');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+const { APIError, STATUS_CODES } = require('../../utils/app-errors');
 
-// ** Add a new video to a section **
-const addVideoToSection = async ({ section_id, video_id, video_url, video_duration, is_locked, is_previewable }) => {
-  const section = await Section.findOne({ section_id });
-  if (!section) throw new Error('Section not found');
+class VideoRepository {
+    async AddVideo(videoDetails) {
+        try {
+            return await prisma.video.create({
+                data: videoDetails,
+            });
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Create Video');
+        }
+    }
 
-  const newVideo = new Video({
-    section_id: section._id,
-    video_id,
-    video_url,
-    video_duration,
-    is_locked,
-    is_previewable,
-  });
+    async FetchAllVideos() {
+        try {
+            return await prisma.video.findMany({
+                include: {
+                    Section: true,
+                }
+            });
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Videos');
+        }
+    }
 
-  await newVideo.save();
-  return newVideo;
-};
+    async FetchVideoById(videoId) {
+        try {
+            const video = await prisma.video.findUnique({
+                where: { video_id: videoId.trim() },
+                include: {
+                    Section: true,
+                }
+            });
+            if (!video) throw new Error('Video Not Found');
+            return video;
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Video');
+        }
+    }
 
-// ** Get all videos for a specific section **
-const getVideosBySectionId = async (section_id) => {
-  const section = await Section.findOne({ section_id });
-  if (!section) throw new Error('Section not found');
+    async DeleteVideoById(videoId) {
+        try {
+            const video = await prisma.video.delete({
+                where: { video_id: videoId.trim() },
+            });
+            if (!video) throw new Error('Video Not Found');
+            return video;
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Delete Video');
+        }
+    }
 
-  return Video.find({ section_id: section._id });
-};
+    async UpdateVideoById(videoId, updates) {
+        try {
+            const video = await prisma.video.update({
+                where: { video_id: videoId.trim() },
+                data: updates,
+            });
+            if (!video) throw new Error('Video Not Found');
+            return video;
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Video');
+        }
+    }
+}
 
-// ** Get a specific video by its video_id and section_id **
-const getVideoById = async (section_id, video_id) => {
-  const section = await Section.findOne({ section_id });
-  if (!section) throw new Error('Section not found');
-
-  const video = await Video.findOne({ section_id: section._id, video_id });
-  if (!video) throw new Error('Video not found');
-
-  return video;
-};
-
-// ** Update a video for a specific section **
-const updateVideo = async (section_id, video_id, videoData) => {
-  const section = await Section.findOne({ section_id });
-  if (!section) throw new Error('Section not found');
-
-  const updatedVideo = await Video.findOneAndUpdate(
-    { section_id: section._id, video_id },
-    videoData,
-    { new: true }
-  );
-
-  if (!updatedVideo) throw new Error('Video not found');
-  return updatedVideo;
-};
-
-// ** Delete a specific video **
-const deleteVideo = async (section_id, video_id) => {
-  const section = await Section.findOne({ section_id });
-  if (!section) throw new Error('Section not found');
-
-  const deletedVideo = await Video.findOneAndDelete({
-    section_id: section._id,
-    video_id,
-  });
-
-  if (!deletedVideo) throw new Error('Video not found');
-  return deletedVideo;
-};
-
-module.exports = {
-  addVideoToSection,
-  getVideosBySectionId,
-  getVideoById,
-  updateVideo,
-  deleteVideo,
-};
+module.exports = VideoRepository;

@@ -1,58 +1,67 @@
-const ReviewModel = require('../../models/Review');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const { APIError, STATUS_CODES } = require('../../utils/app-errors');
 
 class ReviewRepository {
-    // Add a new review
     async AddReview(reviewDetails) {
         try {
-            const review = new ReviewModel(reviewDetails);
-            return await review.save();
+            return await prisma.review.create({
+                data: reviewDetails,
+            });
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Create Review');
         }
     }
 
-    // Fetch all reviews for a specific course
-    async FetchReviewsByCourseId(courseId) {
+    async FetchAllReviews() {
         try {
-            return await ReviewModel.find({ course_id: courseId });
+            return await prisma.review.findMany({
+                include: {
+                    Course: true,
+                }
+            });
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Reviews');
         }
     }
 
-    // Fetch a specific review by review ID
     async FetchReviewById(reviewId) {
         try {
-            return await ReviewModel.findOne({ review_id: reviewId });
+            const review = await prisma.review.findUnique({
+                where: { id: reviewId },
+                include: {
+                    Course: true,
+                }
+            });
+            if (!review) throw new Error('Review Not Found');
+            return review;
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Review');
         }
     }
 
-    // Update a review by review ID
-    async UpdateReviewById(reviewId, updates) {
+    async DeleteReviewById(reviewId) {
         try {
-            const review = await ReviewModel.findOneAndUpdate(
-                { review_id: reviewId },
-                { $set: updates },
-                { new: true, runValidators: true }
-            );
-            if (!review) throw new Error('Review Not Found');
-            return review;
-        } catch (err) {
-            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Review');
-        }
-    }
-
-    // Delete a review by review ID
-    async DeleteReviewById(reviewId, courseId) {
-        try {
-            const review = await ReviewModel.findOneAndDelete({ review_id: reviewId, course_id: courseId });
+            const review = await prisma.review.delete({
+                where: { id: reviewId },
+            });
             if (!review) throw new Error('Review Not Found');
             return review;
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Delete Review');
+        }
+    }
+
+    async UpdateReviewById(reviewId, updates) {
+        try {
+            const review = await prisma.review.update({
+                where: { id: reviewId },
+                data: updates,
+            });
+            if (!review) throw new Error('Review Not Found');
+            return review;
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Review');
         }
     }
 }
