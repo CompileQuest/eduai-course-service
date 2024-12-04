@@ -1,11 +1,13 @@
-const CourseModel = require('../../models/Course');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 const { APIError, STATUS_CODES } = require('../../utils/app-errors');
 
 class CourseRepository {
     async AddCourse(courseDetails) {
         try {
-            const course = new CourseModel(courseDetails);
-            return await course.save();
+            return await prisma.course.create({
+                data: courseDetails,
+            });
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Create Course');
         }
@@ -13,7 +15,7 @@ class CourseRepository {
 
     async FetchAllCourses() {
         try {
-            return await CourseModel.find();
+            return await prisma.course.findMany();
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Courses');
         }
@@ -21,7 +23,9 @@ class CourseRepository {
 
     async FetchCourseById(courseId) {
         try {
-            const course = await CourseModel.findOne({ course_id: courseId.trim() });
+            const course = await prisma.course.findUnique({
+                where: { course_id: courseId.trim() },
+            });
             if (!course) throw new Error('Course Not Found');
             return course;
         } catch (err) {
@@ -31,7 +35,9 @@ class CourseRepository {
 
     async DeleteCourseById(courseId) {
         try {
-            const course = await CourseModel.findOneAndDelete({ course_id: courseId.trim() });
+            const course = await prisma.course.delete({
+                where: { course_id: courseId.trim() },
+            });
             if (!course) throw new Error('Course Not Found');
             return course;
         } catch (err) {
@@ -41,12 +47,10 @@ class CourseRepository {
 
     async UpdateCourseById(courseId, updates) {
         try {
-            updates.updated_at = new Date();
-            const course = await CourseModel.findOneAndUpdate(
-                { course_id: courseId.trim() },
-                { $set: updates },
-                { new: true, runValidators: true }
-            );
+            const course = await prisma.course.update({
+                where: { course_id: courseId.trim() },
+                data: updates,
+            });
             if (!course) throw new Error('Course Not Found');
             return course;
         } catch (err) {
