@@ -56,11 +56,12 @@ module.exports = (app) => {
     });
 
     // Get all videos
-    app.get('/videos/all', async (req, res, next) => {
+     // Get all videos
+     app.get('/videos/all', async (req, res, next) => {
         try {
             const videos = await prisma.video.findMany({
                 include: {
-                    Section: true,
+                    section: true,  // Make sure 'section' is the correct relation name in your Prisma schema
                 }
             });
             res.status(200).json(videos);
@@ -69,26 +70,26 @@ module.exports = (app) => {
         }
     });
 
+    // Get videos by section ID
     app.get('/videos/all/:sectionId', async (req, res, next) => {
-      const { sectionId } = req.params;  // Get the section ID from the URL parameter
-      try {
-          const videos = await prisma.video.findMany({
-              where: {
-                  section_id: parseInt(sectionId)  // Ensure section_id is an integer
-              },
-              include: {
-                  Section: true,
-              }
-          });
-          if (videos.length === 0) {
-              return res.status(404).json({ message: `No videos found for section ID ${sectionId}` });
-          }
-          res.status(200).json(videos);
-      } catch (err) {
-          next(err); // Pass error to the error handler
-      }
-  });
-  
+        const { sectionId } = req.params;  // Get the section ID from the URL parameter
+        try {
+            const videos = await prisma.video.findMany({
+                where: {
+                    section_id: parseInt(sectionId)  // Ensure section_id is an integer
+                },
+                include: {
+                    section: true,  // Make sure 'section' is the correct relation name in your Prisma schema
+                }
+            });
+            if (videos.length === 0) {
+                return res.status(404).json({ message: `No videos found for section ID ${sectionId}` });
+            }
+            res.status(200).json(videos);
+        } catch (err) {
+            next(err); // Pass error to the error handler
+        }
+    });
 
     // Get a specific video by ID
     app.get('/videos/:id', async (req, res, next) => {
@@ -97,7 +98,7 @@ module.exports = (app) => {
             const video = await prisma.video.findUnique({
                 where: { id: parseInt(id) },
                 include: {
-                    Section: true,
+                    section: true,  // Make sure 'section' is the correct relation name in your Prisma schema
                 }
             });
             if (!video) {
@@ -108,6 +109,7 @@ module.exports = (app) => {
             next(err); // Pass error to the error handler
         }
     });
+
 
     // Delete a specific video by ID
     app.delete('/videos/delete/:id', async (req, res, next) => {

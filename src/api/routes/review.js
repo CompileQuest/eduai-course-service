@@ -55,7 +55,7 @@ module.exports = (app) => {
         try {
             const reviews = await prisma.review.findMany({
                 include: {
-                    Course: true,
+                    course: true, // Include the related course data
                 }
             });
             res.status(200).json(reviews);
@@ -64,30 +64,30 @@ module.exports = (app) => {
         }
     });
 
+    // Get reviews for a specific course by courseId
     app.get('/reviews/all/:courseId', async (req, res, next) => {
         try {
             const { courseId } = req.params;
-    
+
             // Fetch reviews for a specific course
             const reviews = await prisma.review.findMany({
                 where: {
-                    course_id: parseInt(courseId) // Filter by the course_id
+                    course_id: parseInt(courseId), // Filter by course_id
                 },
                 include: {
-                    Course: true, // Include course details (optional)
+                    course: true, // Include course details
                 }
             });
-    
+
             if (reviews.length === 0) {
                 return res.status(404).json({ message: 'No reviews found for this course.' });
             }
-    
+
             res.status(200).json(reviews);
         } catch (err) {
             next(err); // Pass error to the error handler
         }
     });
-    
 
     // Get a specific review by ID
     app.get('/reviews/:id', async (req, res, next) => {
@@ -96,12 +96,14 @@ module.exports = (app) => {
             const review = await prisma.review.findUnique({
                 where: { id: parseInt(id) },
                 include: {
-                    Course: true,
+                    course: true, // Include the course related to the review
                 }
             });
+
             if (!review) {
                 return res.status(404).json({ message: 'Review not found' });
             }
+
             res.status(200).json(review);
         } catch (err) {
             next(err); // Pass error to the error handler

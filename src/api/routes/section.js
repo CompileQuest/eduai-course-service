@@ -53,73 +53,99 @@ module.exports = (app) => {
         }
     });
 
-    // Get all sections
-    app.get('/sections/all', async (req, res, next) => {
+      
+      // Get all sections along with their related data
+      app.get('/sections/all', async (req, res, next) => {
         try {
             const sections = await prisma.section.findMany({
                 include: {
-                    Quiz: true,
-                    Course: true,
-                    User_Progress_videos: true,
-                    Video: true
+                    quizzes: true,                // Correct relation name for quizzes
+                    course: true,                 // Correct relation name for course
+                    userProgressVideos: true,     // Correct relation name for userProgressVideos
+                    videos: true                  // Correct relation name for videos
                 }
             });
+    
+            if (sections.length === 0) {
+                return res.status(404).json({ message: 'No sections found.' });
+            }
+    
             res.status(200).json(sections);
         } catch (err) {
+            console.error(err);
             next(err); // Pass error to the error handler
         }
     });
 
+// Get sections for a specific course by courseId
+app.get('/sections/all/:courseId', async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
 
-    app.get('/sections/all/:courseId', async (req, res, next) => {
-      try {
-          const { courseId } = req.params;
-  
-          // Fetch sections for a specific course
-          const sections = await prisma.section.findMany({
-              where: {
-                  course_id: parseInt(courseId) // Filter by course_id
-              },
-              include: {
-                  Quiz: true,
-                  Course: true,
-                  User_Progress_videos: true,
-                  Video: true
-              }
-          });
-  
-          if (sections.length === 0) {
-              return res.status(404).json({ message: 'No sections found for this course.' });
-          }
-  
-          res.status(200).json(sections);
-      } catch (err) {
-          next(err); // Pass error to the error handler
-      }
-  });
-  
+        // Validate that courseId is an integer
+        const parsedCourseId = parseInt(courseId, 10);
+        if (isNaN(parsedCourseId)) {
+            return res.status(400).json({ message: 'Invalid course ID' });
+        }
 
-    // Get a specific section by ID
-    app.get('/sections/:id', async (req, res, next) => {
-        try {
-            const { id } = req.params;
-            const section = await prisma.section.findUnique({
-                where: { id: parseInt(id) },
-                include: {
-                    Quiz: true,
-                    Course: true,
-                    User_Progress_videos: true,
-                    Video: true
-                }
-            });
-            if (!section) {
-                return res.status(404).json({ message: 'Section not found' });
+        // Check if the course exists
+        const courseExists = await prisma.course.findUnique({
+            where: { id: parsedCourseId }
+        });
+        
+        if (!courseExists) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+
+        // Fetch sections for a specific course
+        const sections = await prisma.section.findMany({
+            where: {
+                course_id: parsedCourseId // Filter by course_id
+            },
+            include: {
+                quizzes: true,               // Correct relation name for quizzes
+                course: true,                // Correct relation name for course
+                userProgressVideos: true,    // Correct relation name for userProgressVideos
+                videos: true                 // Correct relation name for videos
             }
-            res.status(200).json(section);
-        } catch (err) {
-            next(err); // Pass error to the error handler
+        });
+
+        if (sections.length === 0) {
+            return res.status(404).json({ message: 'No sections found for this course.' });
         }
-    });
+
+        res.status(200).json(sections);
+    } catch (err) {
+        next(err); // Pass error to the error handler
+    }
+});
+
+// Get a specific section by ID
+app.get('/sections/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const section = await prisma.section.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                quizzes: true,               // Correct relation name for quizzes
+                course: true,                // Correct relation name for course
+                userProgressVideos: true,    // Correct relation name for userProgressVideos
+                videos: true                 // Correct relation name for videos
+            }
+        });
+        
+        if (!section) {
+            return res.status(404).json({ message: 'Section not found' });
+        }
+
+        res.status(200).json(section);
+    } catch (err) {
+        next(err); // Pass error to the error handler
+    }
+});
+
+
+      
 
     // Delete a specific section by ID
     app.delete('/sections/delete/:id', async (req, res, next) => {
