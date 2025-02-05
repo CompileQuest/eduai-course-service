@@ -10,7 +10,24 @@ module.exports = async (app) => {
   // Middleware
   app.use(express.json());
   app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      try {
+        const url = new URL(origin);
+        const port = parseInt(url.port);
+        const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+        if (isLocalhost && port >= 3000 && port <= 4000) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      } catch (err) {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true
   }));
   app.use(express.urlencoded({ extended: true }));
@@ -19,7 +36,7 @@ module.exports = async (app) => {
   app.use('/uploads', express.static(__dirname + '/uploads'))
 
   // Connect to Database
-  await databaseConnection(); 
+  await databaseConnection();
 
   // Routes
   require('./api/routes/course')(app);   // Import course routes

@@ -26,10 +26,37 @@ class CourseRepository {
         }
     }
 
-    async FetchCourseById(courseId) {
+    async FetchCourseTemplateById(courseId) {
         try {
             const course = await this.prisma.course.findUnique({
-                where: { course_id: courseId.trim() },
+                where: { id: courseId.trim() },
+                select: {
+                    title: true,
+                    thumbnailUrl: true,
+                    shortDescription: true,
+                    description: true,
+                    WhatWillYouLearn: true,
+                    requirements: true,
+                    difficultyLevel: true,
+                    price: true,
+                    categories: {
+                        select: {
+                            category: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }, // Fetch the related Category through CourseCategory
+                        },
+                    },
+                    sections: {
+                        select: {
+                            id: true,
+                            sectionTitle: true,
+                            order: true,  
+                        } 
+                    },
+                },   
             });
             if (!course) throw new Error('Course Not Found');
             return course;
@@ -91,6 +118,7 @@ class CourseRepository {
                     requirements: courseData.requirements,
                     difficultyLevel: courseData.level,
                     price: courseData.price,
+                    status: 'draft',
                     // Create the category connection
                     categories: {
                         create: {
@@ -124,6 +152,7 @@ class CourseRepository {
 
     async UpdateCourseTemplate(courseId, imageData) {
         try {
+
             const updatedTemplate = await this.prisma.course.update({
                 where: { id: courseId },
                 data: {
@@ -135,6 +164,8 @@ class CourseRepository {
             if (!updatedTemplate) {
                 throw new APIError('Course template not found', STATUS_CODES.NOT_FOUND);
             }
+
+            console.log("updatedTemplate", updatedTemplate);
 
             return updatedTemplate;
         } catch (error) {
@@ -170,6 +201,27 @@ class CourseRepository {
                 error.statusCode || STATUS_CODES.INTERNAL_ERROR,
                 error.message
             );
+        }
+    }
+
+    async FetchCourseTemplate() {
+        try {
+            return await this.prisma.course.findMany({
+                where: {
+                    status: 'draft'
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    thumbnailUrl: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    status: true
+                }
+            });
+        } catch (err) {
+            console.error('Error fetching course templates:', err); // Log the error details
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course Template');
         }
     }
 }

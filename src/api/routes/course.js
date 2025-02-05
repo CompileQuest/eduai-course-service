@@ -37,7 +37,7 @@ module.exports = (app) => {
                 const image = req.file;
 
                 const courseTemplate = await service.createCourseTemplate(form, image);
-                console.log("courseTemplate done", courseTemplate);
+                console.log("courseTemplate done");
                 res.status(201).json(courseTemplate);
 
             } catch (err) {
@@ -46,49 +46,38 @@ module.exports = (app) => {
         }
     );
 
-    app.post('/courses/add-course', async (req, res, next) => {
+    app.get('/courses/draft-courses', async (req, res, next) => {
         try {
-            const {
-                thumbnail_url,
-                introduction,
-                difficulty_level,
-                price,
-                discounted_price,
-                requirements,
-                duration
-            } = req.body;
-
-            // Check if course already exists
-            const existingCourse = await prisma.course.findUnique({
-                where: { course_id }
-            });
-            if (existingCourse) {
-                return res.status(400).json({ message: 'Course with this ID already exists' });
-            }
-
-            // Create the course without relations for testing
-            const newCourse = await prisma.course.create({
-                data: {
-                    course_id,
-                    thumbnail_url,
-                    introduction,
-                    difficulty_level,
-                    price,
-                    discounted_price,
-                    requirements,
-                    duration,
-                    introduction_video_link
-                }
-            });
-
-            res.status(201).json(newCourse);
+            const courseTemplate = await service.FetchCourseTemplate();
+            res.status(200).json(courseTemplate);
         } catch (err) {
-            next(err); // Pass error to the error handler
+            next(err);
         }
-
     });
 
 
+    app.delete('/courses/delete-course/:id', async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            console.log("Deleting course with id:", id);
+            const deletedCourse = await service.DeleteCourseById(id);
+            res.status(200).json({ message: 'Course deleted', deletedCourse });
+        } catch (err) {
+            next(err);
+        }
+    });
+
+
+    app.get('/courses/draft-courses/:id', async (req, res, next) => {
+        try {
+            const { id } = req.params;
+            console.log("Fetching course with id:", id);
+            const course = await service.FetchCourseTemplateById(id);
+            res.status(200).json(course);
+        } catch (err) {
+            next(err);
+        }
+    });
 
     // Get all courses
     app.get('/courses/all', async (req, res, next) => {

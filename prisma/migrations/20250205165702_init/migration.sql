@@ -10,9 +10,12 @@ CREATE TABLE "Course" (
     "discounted_price" DOUBLE PRECISION,
     "requirements" TEXT,
     "duration" INTEGER,
+    "status" TEXT,
     "introduction_video_link" TEXT,
     "description" TEXT NOT NULL,
     "what_will_you_learn" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
 );
@@ -26,6 +29,8 @@ CREATE TABLE "CourseStatistics" (
     "total_reviews" INTEGER,
     "total_sections" INTEGER,
     "total_lectures" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "CourseStatistics_pkey" PRIMARY KEY ("id")
 );
@@ -34,6 +39,8 @@ CREATE TABLE "CourseStatistics" (
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
@@ -43,6 +50,8 @@ CREATE TABLE "CourseCategory" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "category_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "CourseCategory_pkey" PRIMARY KEY ("id")
 );
@@ -53,6 +62,8 @@ CREATE TABLE "Section" (
     "course_id" TEXT NOT NULL,
     "section_title" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Section_pkey" PRIMARY KEY ("id")
 );
@@ -80,6 +91,8 @@ CREATE TABLE "Quiz" (
     "title" TEXT NOT NULL,
     "passing_score" INTEGER,
     "description" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Quiz_pkey" PRIMARY KEY ("id")
 );
@@ -92,6 +105,8 @@ CREATE TABLE "Question" (
     "type" TEXT NOT NULL,
     "options" TEXT,
     "correct_answers" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
 );
@@ -104,6 +119,7 @@ CREATE TABLE "Review" (
     "rating" DOUBLE PRECISION,
     "comment" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Review_pkey" PRIMARY KEY ("id")
 );
@@ -115,6 +131,8 @@ CREATE TABLE "FAQ" (
     "course_id" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "FAQ_pkey" PRIMARY KEY ("id")
 );
@@ -123,6 +141,8 @@ CREATE TABLE "FAQ" (
 CREATE TABLE "Tags" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Tags_pkey" PRIMARY KEY ("id")
 );
@@ -132,6 +152,8 @@ CREATE TABLE "CourseTags" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "tag_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "CourseTags_pkey" PRIMARY KEY ("id")
 );
@@ -145,6 +167,8 @@ CREATE TABLE "UserProgressVideos" (
     "video_id" TEXT NOT NULL,
     "is_completed" BOOLEAN NOT NULL,
     "completed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "UserProgressVideos_pkey" PRIMARY KEY ("id")
 );

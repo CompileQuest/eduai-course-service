@@ -1,6 +1,6 @@
 const CourseRepository = require('../database/repository/course-repository');
 const { APIError } = require('../utils/app-errors');
-const {uploadImage} = require('./cloudinary/image-uploader');
+const { uploadImage } = require('./cloudinary/image-uploader');
 
 class CourseService {
     constructor() {
@@ -15,12 +15,12 @@ class CourseService {
         return await this.repository.FetchAllCourses();
     }
 
-    async FetchCourseById(courseId) {
-        return await this.repository.FetchCourseById(courseId);
+    async FetchCourseTemplateById(courseId) {
+        return await this.repository.FetchCourseTemplateById(courseId);
     }
 
     async DeleteCourseById(courseId) {
-        return await this.repository.DeleteCourseById(courseId);
+        return await this.repository.DeleteCourseTemplate(courseId);
     }
 
     async UpdateCourse(courseId, updates) {
@@ -52,7 +52,6 @@ class CourseService {
                 level: data.level,
                 price: parseFloat(data.price),
                 sections: JSON.parse(data.sections),
-                status: 'draft'  // Default status for new templates
             };
 
             // Create course template
@@ -67,10 +66,12 @@ class CourseService {
                     publicId: imageUrl.public_id
                 };
 
+                console.log("imageData", imageData);
+
                 // Update template with thumbnail URL
                 const updatedTemplate = await this.repository.UpdateCourseTemplate(
                     courseTemplate.id,
-                    { thumbnail: imageData }
+                    imageData // Pass imageData directly
                 );
 
                 return updatedTemplate;
@@ -90,6 +91,12 @@ class CourseService {
                 error.message
             );
         }
+    }
+
+
+
+    async FetchCourseTemplate() {
+        return await this.repository.FetchCourseTemplate();
     }
 }
 

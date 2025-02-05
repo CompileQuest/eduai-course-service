@@ -8,62 +8,73 @@ datasource db {
 }
 
 model Course {
-  id                      String               @id @default(uuid())
-  title                   String?              
-  thumbnailUrl            String?              @map("thumbnail_url")
-  thumbnailPublicId      String?              @map("thumbnail_public_id")
-  shortDescription        String?              @map("short_description")
-  difficultyLevel         String?              @map("difficulty_level")
-  price                   Float?
-  discountedPrice         Float?               @map("discounted_price")
-  requirements            String?
-  duration                Int?
-  introductionVideoLink   String?              @map("introduction_video_link")
-  statistics              CourseStatistics?    // One-to-one relation
-  sections                Section[]            // One-to-many relation
-  reviews                 Review[]             // One-to-many relation
-  description             String  
-  WhatWillYouLearn       String?              @map("what_will_you_learn")
-  categories              CourseCategory[]     // Many-to-many relation
-  tags                    CourseTags[]         // Many-to-many relation
-  userProgressVideos      UserProgressVideos[] // One-to-many relation
-  faqs                    FAQ[]                // Added relation to FAQ
+  id                    String               @id @default(uuid())
+  title                 String?
+  thumbnailUrl          String?              @map("thumbnail_url")
+  thumbnailPublicId     String?              @map("thumbnail_public_id")
+  shortDescription      String?              @map("short_description")
+  difficultyLevel       String?              @map("difficulty_level")
+  price                 Float?
+  discountedPrice       Float?               @map("discounted_price")
+  requirements          String?
+  duration              Int?
+  status                String?
+  introductionVideoLink String?              @map("introduction_video_link")
+  statistics            CourseStatistics? // One-to-one relation
+  sections              Section[] // One-to-many relation
+  reviews               Review[] // One-to-many relation
+  description           String
+  WhatWillYouLearn      String?              @map("what_will_you_learn")
+  categories            CourseCategory[] // Many-to-many relation
+  tags                  CourseTags[] // Many-to-many relation
+  userProgressVideos    UserProgressVideos[] // One-to-many relation
+  faqs                  FAQ[] // Added relation to FAQ
+  createdAt             DateTime             @default(now()) @map("created_at")
+  updatedAt             DateTime             @updatedAt @map("updated_at")
 }
 
 model CourseStatistics {
-  id              String @id @default(uuid())
-  courseId        String @unique @map("course_id") // Ensuring one-to-one relation with Course
-  enrolledNumber  Int?   @map("enrolled_number")
-  averageRating   Float? @map("average_rating")
-  totalReviews    Int?   @map("total_reviews")
-  totalSections   Int?   @map("total_sections")
-  totalLectures   Int?   @map("total_lectures")
-  course          Course @relation(fields: [courseId], references: [id])
+  id             String   @id @default(uuid())
+  courseId       String   @unique @map("course_id") // Ensuring one-to-one relation with Course
+  enrolledNumber Int?     @map("enrolled_number")
+  averageRating  Float?   @map("average_rating")
+  totalReviews   Int?     @map("total_reviews")
+  totalSections  Int?     @map("total_sections")
+  totalLectures  Int?     @map("total_lectures")
+  course         Course   @relation(fields: [courseId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 }
 
 model Category {
-  id          String           @id @default(uuid())
-  name        String
-  courses     CourseCategory[] // Many-to-many relation
+  id        String           @id @default(uuid())
+  name      String
+  courses   CourseCategory[] // Many-to-many relation
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
 }
 
 model CourseCategory {
-  id          String   @id @default(uuid())
-  courseId    String   @map("course_id")
-  categoryId  String   @map("category_id")
-  course      Course   @relation(fields: [courseId], references: [id])
-  category    Category @relation(fields: [categoryId], references: [id])
+  id         String   @id @default(uuid())
+  courseId   String   @map("course_id")
+  categoryId String   @map("category_id")
+  course     Course   @relation(fields: [courseId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 }
 
 model Section {
-  id                  String               @id @default(uuid())
-  courseId            String               @map("course_id")
-  sectionTitle        String               @map("section_title")
-  order               Int
-  course              Course               @relation(fields: [courseId], references: [id])
-  videos              Video[]              // One-to-many relation
-  quizzes             Quiz[]               // One-to-many relation
-  userProgressVideos  UserProgressVideos[] // Added relation to UserProgressVideos
+  id                 String               @id @default(uuid())
+  courseId           String               @map("course_id")
+  sectionTitle       String               @map("section_title")
+  order              Int
+  course             Course               @relation(fields: [courseId], references: [id])
+  videos             Video[] // One-to-many relation
+  quizzes            Quiz[] // One-to-many relation
+  userProgressVideos UserProgressVideos[] // Added relation to UserProgressVideos
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
 }
 
 model Video {
@@ -76,75 +87,86 @@ model Video {
   compressedSize Int                  @map("compressed_size")
   duration       Int
   section        Section              @relation(fields: [sectionId], references: [id])
+  userProgress   UserProgressVideos[] // Added reverse relation
   createdAt      DateTime             @default(now()) @map("created_at")
   updatedAt      DateTime             @updatedAt @map("updated_at")
-  userProgress   UserProgressVideos[] // Added reverse relation
 }
 
 model Quiz {
-  id            String   @id @default(uuid())
-  sectionId     String   @map("section_id")
-  title         String
-  passingScore  Int?     @map("passing_score")
-  description   String?
-  section       Section  @relation(fields: [sectionId], references: [id])
-  questions     Question[] // One-to-many relation
+  id           String     @id @default(uuid())
+  sectionId    String     @map("section_id")
+  title        String
+  passingScore Int?       @map("passing_score")
+  description  String?
+  section      Section    @relation(fields: [sectionId], references: [id])
+  questions    Question[] // One-to-many relation
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
 }
 
 model Question {
-  id              String   @id @default(uuid())
-  quizId          String   @map("quiz_id")
-  text            String
-  type            String
-  options         String?
-  correctAnswers  String?  @map("correct_answers")
-  quiz            Quiz     @relation(fields: [quizId], references: [id])
+  id             String   @id @default(uuid())
+  quizId         String   @map("quiz_id")
+  text           String
+  type           String
+  options        String?
+  correctAnswers String?  @map("correct_answers")
+  quiz           Quiz     @relation(fields: [quizId], references: [id])
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 }
 
 model Review {
-  id         String   @id @default(uuid())
-  courseId   String   @map("course_id")
-  userId     String   @map("user_id")
-  rating     Float?
-  comment    String?
-  createdAt  DateTime @default(now()) @map("created_at")
-  course     Course   @relation(fields: [courseId], references: [id])
+  id        String   @id @default(uuid())
+  courseId  String   @map("course_id")
+  userId    String   @map("user_id")
+  rating    Float?
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  course    Course   @relation(fields: [courseId], references: [id])
 }
 
 model FAQ {
-  id        String @id @default(uuid())
-  userId    String @map("user_id")
-  courseId  String @map("course_id")
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  courseId  String   @map("course_id")
   question  String
   answer    String
-  course    Course @relation(fields: [courseId], references: [id])
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
-
-
 model Tags {
-  id      String       @id @default(uuid())
-  name    String       @unique
-  courses CourseTags[] // Many-to-many relation
+  id        String       @id @default(uuid())
+  name      String       @unique
+  courses   CourseTags[] // Many-to-many relation
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
 }
 
 model CourseTags {
-  id        String @id @default(uuid())
-  courseId  String @map("course_id")
-  tagId     String @map("tag_id")
-  course    Course @relation(fields: [courseId], references: [id])
-  tag       Tags   @relation(fields: [tagId], references: [id])
+  id        String   @id @default(uuid())
+  courseId  String   @map("course_id")
+  tagId     String   @map("tag_id")
+  course    Course   @relation(fields: [courseId], references: [id])
+  tag       Tags     @relation(fields: [tagId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 model UserProgressVideos {
-  id           String    @id @default(uuid())
-  userId       String    @map("user_id")
-  courseId     String    @map("course_id")
-  sectionId    String    @map("section_id")
-  videoId      String    @map("video_id")
-  isCompleted  Boolean   @map("is_completed")
-  completedAt  DateTime? @map("completed_at")
-  course       Course    @relation(fields: [courseId], references: [id])
-  section      Section   @relation(fields: [sectionId], references: [id])
-  video        Video     @relation(fields: [videoId], references: [id])
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  courseId    String    @map("course_id")
+  sectionId   String    @map("section_id")
+  videoId     String    @map("video_id")
+  isCompleted Boolean   @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  course      Course    @relation(fields: [courseId], references: [id])
+  section     Section   @relation(fields: [sectionId], references: [id])
+  video       Video     @relation(fields: [videoId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 }
