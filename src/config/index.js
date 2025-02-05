@@ -1,12 +1,30 @@
-// Load environment variables from .env file
-require('dotenv').config({ path: '.env' });  // Specify the .env file
+// Load environment variables based on NODE_ENV
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const envFile = NODE_ENV === 'dev' ? '.env' : '.env'; // for now we are using the same env file for dev and prod    
+require('dotenv').config({ path: envFile });
 
-const { PORT } = process.env;  // Access PORT from .env
+// Define required environment variables
+const requiredEnvVars = {
+    PORT: process.env.PORT,
+    DATABASE_URL: process.env.DATABASE_URL
+};
 
-// Check if PORT exists in environment variables
-if (!PORT) {
-    console.error('PORT not found in environment variables!');
-    process.exit(1);  // Stop execution if no PORT is found
+// Check if all required environment variables exist
+const missingVars = [];
+for (const [key, value] of Object.entries(requiredEnvVars)) {
+    if (!value) {
+        missingVars.push(key);
+    }
 }
 
-module.exports = { PORT };  // Export PORT
+if (missingVars.length > 0) {
+    console.error('Missing required environment variables:', missingVars.join(', '));
+    process.exit(1);
+} else {
+    console.log('✅ All environment variables loaded successfully');
+}
+
+module.exports = {
+    PORT: requiredEnvVars.PORT,
+    DATABASE_URL: requiredEnvVars.DATABASE_URL,
+};  // Export PORT, DATABASE_URL

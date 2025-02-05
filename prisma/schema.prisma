@@ -1,151 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model Course {
-  id                    Int                @id @default(autoincrement())
-  course_id             String             @unique
-  thumbnail_url         String?
-  introduction          String?
-  difficulty_level      String?
-  price                 Float?
-  discounted_price      Float?
-  requirements          String?
-  duration             Int?
-  introduction_video_link String?
-  statistics           CourseStatistics?   // One-to-one relation
-  sections             Section[]           // One-to-many relation
-  reviews              Review[]            // One-to-many relation
-  descriptions         CourseDescription?  // One-to-one relation
-  categories           CourseCategory[]    // Many-to-many relation
-  tags                 CourseTags[]        // Many-to-many relation
-  userProgressVideos   UserProgressVideos[] // One-to-many relation
-  faqs                 FAQ[]               // Added relation to FAQ
+  id                      String               @id @default(uuid())
+  title                   String?              
+  thumbnailUrl            String?              @map("thumbnail_url")
+  thumbnailPublicId      String?              @map("thumbnail_public_id")
+  shortDescription        String?              @map("short_description")
+  difficultyLevel         String?              @map("difficulty_level")
+  price                   Float?
+  discountedPrice         Float?               @map("discounted_price")
+  requirements            String?
+  duration                Int?
+  introductionVideoLink   String?              @map("introduction_video_link")
+  statistics              CourseStatistics?    // One-to-one relation
+  sections                Section[]            // One-to-many relation
+  reviews                 Review[]             // One-to-many relation
+  description             String  
+  WhatWillYouLearn       String?              @map("what_will_you_learn")
+  categories              CourseCategory[]     // Many-to-many relation
+  tags                    CourseTags[]         // Many-to-many relation
+  userProgressVideos      UserProgressVideos[] // One-to-many relation
+  faqs                    FAQ[]                // Added relation to FAQ
 }
 
 model CourseStatistics {
-  id              Int       @id @default(autoincrement())
-  course_id       Int       @unique   // Ensuring one-to-one relation with Course
-  enrolled_number Int?
-  average_rating  Float?
-  total_reviews   Int?
-  total_sections  Int?
-  total_lectures  Int?
-  course          Course    @relation(fields: [course_id], references: [id])
+  id              String @id @default(uuid())
+  courseId        String @unique @map("course_id") // Ensuring one-to-one relation with Course
+  enrolledNumber  Int?   @map("enrolled_number")
+  averageRating   Float? @map("average_rating")
+  totalReviews    Int?   @map("total_reviews")
+  totalSections   Int?   @map("total_sections")
+  totalLectures   Int?   @map("total_lectures")
+  course          Course @relation(fields: [courseId], references: [id])
 }
 
 model Category {
-  id          Int           @id @default(autoincrement())
+  id          String           @id @default(uuid())
   name        String
-  description String?
   courses     CourseCategory[] // Many-to-many relation
 }
 
+model CourseCategory {
+  id          String   @id @default(uuid())
+  courseId    String   @map("course_id")
+  categoryId  String   @map("category_id")
+  course      Course   @relation(fields: [courseId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
 model Section {
-  id                  Int          @id @default(autoincrement())
-  course_id           Int
-  section_id         String       @unique
-  section_title      String
-  order              Int
-  section_description String?
-  course             Course       @relation(fields: [course_id], references: [id])
-  videos             Video[]      // One-to-many relation
-  quizzes            Quiz[]       // One-to-many relation
-  userProgressVideos UserProgressVideos[] // Added relation to UserProgressVideos
+  id                  String               @id @default(uuid())
+  courseId            String               @map("course_id")
+  sectionTitle        String               @map("section_title")
+  order               Int
+  course              Course               @relation(fields: [courseId], references: [id])
+  videos              Video[]              // One-to-many relation
+  quizzes             Quiz[]               // One-to-many relation
+  userProgressVideos  UserProgressVideos[] // Added relation to UserProgressVideos
 }
 
 model Video {
-  id              Int       @id @default(autoincrement())
-  section_id     Int
-  video_id       String    @unique
-  video_url      String
-  video_duration Int?
-  is_locked      Boolean
-  is_previewable Boolean
-  section        Section   @relation(fields: [section_id], references: [id])
+  id             String               @id @default(uuid())
+  sectionId      String               @map("section_id")
+  publicId       String               @map("public_id")
+  title          String
+  description    String
+  originalSize   Int                  @map("original_size")
+  compressedSize Int                  @map("compressed_size")
+  duration       Int
+  section        Section              @relation(fields: [sectionId], references: [id])
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  userProgress   UserProgressVideos[] // Added reverse relation
 }
 
 model Quiz {
-  id              Int       @id @default(autoincrement())
-  section_id     Int
-  title          String
-  passing_score  Int?
-  description    String?
-  section        Section   @relation(fields: [section_id], references: [id])
-  questions      Question[] // One-to-many relation
+  id            String   @id @default(uuid())
+  sectionId     String   @map("section_id")
+  title         String
+  passingScore  Int?     @map("passing_score")
+  description   String?
+  section       Section  @relation(fields: [sectionId], references: [id])
+  questions     Question[] // One-to-many relation
 }
 
 model Question {
-  id              Int       @id @default(autoincrement())
-  quiz_id         Int
+  id              String   @id @default(uuid())
+  quizId          String   @map("quiz_id")
   text            String
   type            String
   options         String?
-  correct_answers String?
-  quiz            Quiz      @relation(fields: [quiz_id], references: [id])
+  correctAnswers  String?  @map("correct_answers")
+  quiz            Quiz     @relation(fields: [quizId], references: [id])
 }
 
 model Review {
-  id              Int       @id @default(autoincrement())
-  course_id       Int
-  user_id         Int
-  rating          Float?
-  comment         String?
-  created_at      DateTime  @default(now())
-  course          Course    @relation(fields: [course_id], references: [id])
+  id         String   @id @default(uuid())
+  courseId   String   @map("course_id")
+  userId     String   @map("user_id")
+  rating     Float?
+  comment    String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  course     Course   @relation(fields: [courseId], references: [id])
 }
 
 model FAQ {
-  id          Int       @id @default(autoincrement())
-  user_id     Int
-  course_id   Int
-  question    String
-  answer      String
-  course      Course    @relation(fields: [course_id], references: [id])
+  id        String @id @default(uuid())
+  userId    String @map("user_id")
+  courseId  String @map("course_id")
+  question  String
+  answer    String
+  course    Course @relation(fields: [courseId], references: [id])
 }
 
-model CourseDescription {
-  id          Int       @id @default(autoincrement())
-  course_id   Int       @unique // One-to-one relation with Course
-  description String?
-  course      Course    @relation(fields: [course_id], references: [id])
-}
 
-model CourseCategory {
-  id          Int       @id @default(autoincrement())
-  course_id   Int
-  category_id Int
-  course      Course    @relation(fields: [course_id], references: [id])
-  category    Category  @relation(fields: [category_id], references: [id])
-}
 
 model Tags {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  courses     CourseTags[] // Many-to-many relation
+  id      String       @id @default(uuid())
+  name    String       @unique
+  courses CourseTags[] // Many-to-many relation
 }
 
 model CourseTags {
-  id          Int       @id @default(autoincrement())
-  course_id   Int
-  tag_id      Int
-  course      Course    @relation(fields: [course_id], references: [id])
-  tag         Tags      @relation(fields: [tag_id], references: [id])
+  id        String @id @default(uuid())
+  courseId  String @map("course_id")
+  tagId     String @map("tag_id")
+  course    Course @relation(fields: [courseId], references: [id])
+  tag       Tags   @relation(fields: [tagId], references: [id])
 }
 
 model UserProgressVideos {
-  id            Int       @id @default(autoincrement())
-  user_id       Int
-  course_id     Int
-  section_id    Int
-  video_id      Int
-  is_completed  Boolean
-  completed_at  DateTime?
-  course        Course    @relation(fields: [course_id], references: [id])
-  section       Section   @relation(fields: [section_id], references: [id])
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  courseId     String    @map("course_id")
+  sectionId    String    @map("section_id")
+  videoId      String    @map("video_id")
+  isCompleted  Boolean   @map("is_completed")
+  completedAt  DateTime? @map("completed_at")
+  course       Course    @relation(fields: [courseId], references: [id])
+  section      Section   @relation(fields: [sectionId], references: [id])
+  video        Video     @relation(fields: [videoId], references: [id])
 }

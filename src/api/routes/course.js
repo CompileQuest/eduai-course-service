@@ -1,35 +1,61 @@
 const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
 const prisma = new PrismaClient(); // Instantiate Prisma Client
+const upload = require('../../middleware/upload');
+const { authMiddleware } = require('../../middleware/auth.middleware');
+const CourseService = require('../../services/course-service');
 
 module.exports = (app) => {
-    // Error handler middleware
-    const errorHandler = (err, req, res, next) => {
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-            return res.status(400).json({ message: 'Duplicate entry found.' });
-        }
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
-            return res.status(404).json({ message: 'Course not found.' });
-        }
-        if (err instanceof Prisma.PrismaClientValidationError) {
-            return res.status(400).json({ message: 'Validation error in Prisma request.' });
-        }
-        console.error(err);
-        return res.status(500).json({ message: 'Internal server error', error: err.message });
-    };
+    const service = new CourseService();
 
-    // Add a new course
+    app.get('/testing', (req, res) => {
+        res.send('Hello World');
+    });
+
+    app.get('/categories', async (req, res, next) => {
+        try {
+            const categories = await service.FetchCategories();
+
+            console.log("sending back categories");
+            return res.status(200).json(categories);
+        } catch (error) {
+            next(error);
+        }
+    });
+
+
+    app.post('/courses/create-course-template',
+        authMiddleware,
+        upload.single('thumbnail'),
+        async (req, res, next) => {
+            try {
+                // Now you can access the authenticated user via req.user
+                console.log('Authenticated user:', req.user);
+                console.log('Request body:', req.body);
+                console.log('Uploaded file:', req.file);
+
+                const form = req.body
+                const image = req.file;
+
+                const courseTemplate = await service.createCourseTemplate(form, image);
+                console.log("courseTemplate done", courseTemplate);
+                res.status(201).json(courseTemplate);
+
+            } catch (err) {
+                next(err);
+            }
+        }
+    );
+
     app.post('/courses/add-course', async (req, res, next) => {
         try {
             const {
-                course_id,
                 thumbnail_url,
                 introduction,
                 difficulty_level,
                 price,
                 discounted_price,
                 requirements,
-                duration,
-                introduction_video_link
+                duration
             } = req.body;
 
             // Check if course already exists
@@ -59,7 +85,10 @@ module.exports = (app) => {
         } catch (err) {
             next(err); // Pass error to the error handler
         }
+
     });
+
+
 
     // Get all courses
     app.get('/courses/all', async (req, res, next) => {
@@ -131,6 +160,4 @@ module.exports = (app) => {
         }
     });
 
-    // Use the error handler
-    app.use(errorHandler);
 };

@@ -1,0 +1,151 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Course {
+  id                    Int                @id @default(autoincrement())
+  course_id             String             @unique
+  thumbnail_url         String?
+  introduction          String?
+  difficulty_level      String?
+  price                 Float?
+  discounted_price      Float?
+  requirements          String?
+  duration             Int?
+  introduction_video_link String?
+  statistics           CourseStatistics?   // One-to-one relation
+  sections             Section[]           // One-to-many relation
+  reviews              Review[]            // One-to-many relation
+  descriptions         CourseDescription?  // One-to-one relation
+  categories           CourseCategory[]    // Many-to-many relation
+  tags                 CourseTags[]        // Many-to-many relation
+  userProgressVideos   UserProgressVideos[] // One-to-many relation
+  faqs                 FAQ[]               // Added relation to FAQ
+}
+
+model CourseStatistics {
+  id              Int       @id @default(autoincrement())
+  course_id       Int       @unique   // Ensuring one-to-one relation with Course
+  enrolled_number Int?
+  average_rating  Float?
+  total_reviews   Int?
+  total_sections  Int?
+  total_lectures  Int?
+  course          Course    @relation(fields: [course_id], references: [id])
+}
+
+model Category {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  courses     CourseCategory[] // Many-to-many relation
+}
+
+model Section {
+  id                  Int          @id @default(autoincrement())
+  course_id           Int
+  section_id         String       @unique
+  section_title      String
+  order              Int
+  section_description String?
+  course             Course       @relation(fields: [course_id], references: [id])
+  videos             Video[]      // One-to-many relation
+  quizzes            Quiz[]       // One-to-many relation
+  userProgressVideos UserProgressVideos[] // Added relation to UserProgressVideos
+}
+
+model Video {
+  id              Int       @id @default(autoincrement())
+  section_id     Int
+  video_id       String    @unique
+  video_url      String
+  video_duration Int?
+  is_locked      Boolean
+  is_previewable Boolean
+  section        Section   @relation(fields: [section_id], references: [id])
+}
+
+model Quiz {
+  id              Int       @id @default(autoincrement())
+  section_id     Int
+  title          String
+  passing_score  Int?
+  description    String?
+  section        Section   @relation(fields: [section_id], references: [id])
+  questions      Question[] // One-to-many relation
+}
+
+model Question {
+  id              Int       @id @default(autoincrement())
+  quiz_id         Int
+  text            String
+  type            String
+  options         String?
+  correct_answers String?
+  quiz            Quiz      @relation(fields: [quiz_id], references: [id])
+}
+
+model Review {
+  id              Int       @id @default(autoincrement())
+  course_id       Int
+  user_id         Int
+  rating          Float?
+  comment         String?
+  created_at      DateTime  @default(now())
+  course          Course    @relation(fields: [course_id], references: [id])
+}
+
+model FAQ {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  course_id   Int
+  question    String
+  answer      String
+  course      Course    @relation(fields: [course_id], references: [id])
+}
+
+model CourseDescription {
+  id          Int       @id @default(autoincrement())
+  course_id   Int       @unique // One-to-one relation with Course
+  description String?
+  course      Course    @relation(fields: [course_id], references: [id])
+}
+
+model CourseCategory {
+  id          Int       @id @default(autoincrement())
+  course_id   Int
+  category_id Int
+  course      Course    @relation(fields: [course_id], references: [id])
+  category    Category  @relation(fields: [category_id], references: [id])
+}
+
+model Tags {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  courses     CourseTags[] // Many-to-many relation
+}
+
+model CourseTags {
+  id          Int       @id @default(autoincrement())
+  course_id   Int
+  tag_id      Int
+  course      Course    @relation(fields: [course_id], references: [id])
+  tag         Tags      @relation(fields: [tag_id], references: [id])
+}
+
+model UserProgressVideos {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  course_id     Int
+  section_id    Int
+  video_id      Int
+  is_completed  Boolean
+  completed_at  DateTime?
+  course        Course    @relation(fields: [course_id], references: [id])
+  section       Section   @relation(fields: [section_id], references: [id])
+}

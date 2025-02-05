@@ -1,11 +1,16 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { APIError, STATUS_CODES } = require('../../utils/app-errors');
+const { AppError } = require('../../utils/app-errors');
 
 class CourseRepository {
+    constructor() {
+        this.prisma = new PrismaClient();
+    }
+
     async AddCourse(courseDetails) {
         try {
-            return await prisma.course.create({
+            return await this.prisma.course.create({
                 data: courseDetails,
             });
         } catch (err) {
@@ -15,7 +20,7 @@ class CourseRepository {
 
     async FetchAllCourses() {
         try {
-            return await prisma.course.findMany();
+            return await this.prisma.course.findMany();
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Courses');
         }
@@ -23,7 +28,7 @@ class CourseRepository {
 
     async FetchCourseById(courseId) {
         try {
-            const course = await prisma.course.findUnique({
+            const course = await this.prisma.course.findUnique({
                 where: { course_id: courseId.trim() },
             });
             if (!course) throw new Error('Course Not Found');
@@ -35,7 +40,7 @@ class CourseRepository {
 
     async DeleteCourseById(courseId) {
         try {
-            const course = await prisma.course.delete({
+            const course = await this.prisma.course.delete({
                 where: { course_id: courseId.trim() },
             });
             if (!course) throw new Error('Course Not Found');
@@ -47,7 +52,7 @@ class CourseRepository {
 
     async UpdateCourseById(courseId, updates) {
         try {
-            const course = await prisma.course.update({
+            const course = await this.prisma.course.update({
                 where: { course_id: courseId.trim() },
                 data: updates,
             });
@@ -55,6 +60,116 @@ class CourseRepository {
             return course;
         } catch (err) {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Course');
+        }
+    }
+
+    async FetchCategories() {
+        try {
+            const categories = await this.prisma.category.findMany();
+
+            if (!categories) {
+                throw new APIError('Data Not Found', STATUS_CODES.NOT_FOUND, 'No Categories Found');
+            }
+
+            return categories;
+        } catch (err) {
+            console.error('Error in FetchCategories:', err); // Debug log
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Categories');
+        }
+    }
+
+    async CreateCourseTemplate(courseData) {
+        try {
+            // First, create the course
+            const course = await this.prisma.course.create({
+                data: {
+                    title: courseData.title,
+                    thumbnailUrl: null,  // Will be updated later
+                    shortDescription: courseData.short_description,
+                    description: courseData.description,
+                    WhatWillYouLearn: courseData.what_you_will_learn,
+                    requirements: courseData.requirements,
+                    difficultyLevel: courseData.level,
+                    price: courseData.price,
+                    // Create the category connection
+                    categories: {
+                        create: {
+                            categoryId: courseData.category_id
+                        }
+                    }
+                }
+            });
+
+            // Then create sections if they exist
+            if (courseData.sections && courseData.sections.length > 0) {
+                await this.prisma.section.createMany({
+                    data: courseData.sections.map((section, index) => ({
+                        courseId: course.id,
+                        sectionTitle: section.title,
+                        order: index + 1
+                    }))
+                });
+            }
+
+            return course;
+        } catch (error) {
+            console.error("Repository Error:", error);
+            throw new AppError(
+                "Unable to Create Course Template",
+                error.statusCode || 500,
+                error.message
+            );
+        }
+    }
+
+    async UpdateCourseTemplate(courseId, imageData) {
+        try {
+            const updatedTemplate = await this.prisma.course.update({
+                where: { id: courseId },
+                data: {
+                    thumbnailUrl: imageData.url,
+                    thumbnailPublicId: imageData.publicId
+                },
+            });
+
+            if (!updatedTemplate) {
+                throw new APIError('Course template not found', STATUS_CODES.NOT_FOUND);
+            }
+
+            return updatedTemplate;
+        } catch (error) {
+            throw new APIError(
+                'Error updating course template',
+                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
+                error.message
+            );
+        }
+    }
+
+    async DeleteCourseTemplate(courseId) {
+        try {
+            return await this.prisma.$transaction(async (prisma) => {
+                // Delete sections first
+                await prisma.section.deleteMany({
+                    where: { courseId: courseId }
+                });
+
+                // Delete course categories
+                await prisma.courseCategory.deleteMany({
+                    where: { courseId: courseId }
+                });
+
+                // Finally delete the course
+                return await prisma.course.delete({
+                    where: { id: courseId }
+                });
+            });
+        } catch (error) {
+            throw new APIError(
+                'Error deleting course template',
+                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
+                error.message
+            );
         }
     }
 }
