@@ -43,7 +43,7 @@ module.exports = async (app) => {
   require('./api/routes/review')(app);  // Import review routes
   require('./api/routes/section')(app); // Import section routes
   require('./api/routes/video')(app);   // Import video routes
-
+  require('./api/routes/cloudinary')(app); // Import cloudinary routes
   // Handle 404 Errors
   app.use(HandleErrors);
 };
