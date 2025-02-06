@@ -53,10 +53,10 @@ class CourseRepository {
                         select: {
                             id: true,
                             sectionTitle: true,
-                            order: true,  
-                        } 
+                            order: true,
+                        }
                     },
-                },   
+                },
             });
             if (!course) throw new Error('Course Not Found');
             return course;
@@ -224,6 +224,66 @@ class CourseRepository {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course Template');
         }
     }
+
+    async FetchCourseContentById(courseId) {
+        try {
+            return await this.prisma.course.findUnique({
+                where: { id: courseId },
+                select: {
+                    sections: {
+                        orderBy: { order: 'asc' },
+                        select: {
+                            id: true,
+                            sectionTitle: true,
+                            order: true,
+                            videos: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    description: true,
+                                    duration: true
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course Content');
+        }
+    }
+
+
+    async UpdateSectionsSorting(courseId, sections) {
+        try {
+            // Verify that all sections belong to the specified course
+            const sectionIds = sections.map(section => section.id);
+            const existingSections = await this.prisma.section.findMany({
+                where: {
+                    id: { in: sectionIds },
+                    courseId: courseId // Ensure sections belong to the specified course
+                }
+            });
+
+            if (existingSections.length !== sections.length) {
+                throw new APIError('Validation Error', STATUS_CODES.BAD_REQUEST, 'Some sections do not belong to the specified course');
+            }
+
+            // Iterate through each section and update its order
+            const updatePromises = sections.map(section => {
+                return this.prisma.section.update({
+                    where: { id: section.id },
+                    data: { order: section.order }
+                });
+            });
+            // Wait for all updates to complete
+            return await Promise.all(updatePromises);
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Sections Sorting');
+        }
+    }
+
+
 }
 
 module.exports = CourseRepository;

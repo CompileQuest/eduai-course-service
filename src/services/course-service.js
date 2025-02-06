@@ -98,6 +98,15 @@ class CourseService {
     async FetchCourseTemplate() {
         return await this.repository.FetchCourseTemplate();
     }
+
+
+    async FetchCourseContentById(courseId) {
+        return await this.repository.FetchCourseContentById(courseId);
+    }
+
+    async UpdateSectionsSorting(courseId, sections) {
+        return await this.repository.UpdateSectionsSorting(courseId, sections);
+    }
 }
 
 

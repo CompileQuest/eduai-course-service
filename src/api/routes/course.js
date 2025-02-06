@@ -79,77 +79,42 @@ module.exports = (app) => {
         }
     });
 
-    // Get all courses
-    app.get('/courses/all', async (req, res, next) => {
-        try {
-            const courses = await prisma.course.findMany();
-            res.status(200).json(courses);
-        } catch (err) {
-            next(err); // Pass error to the error handler
-        }
-    });
 
-    // Get a specific course by ID
-    app.get('/courses/:id', async (req, res, next) => {
+
+    app.get('/courses/:id/content', async (req, res, next) => {
         try {
             const { id } = req.params;
-            const course = await prisma.course.findUnique({
-                where: { id: parseInt(id) }
-            });
-            if (!course) {
-                return res.status(404).json({ message: 'Course not found' });
-            }
-            res.status(200).json(course);
+            console.log("Fetching course content with id:", id);
+            const courseContent = await service.FetchCourseContentById(id);
+            res.status(200).json(courseContent);
         } catch (err) {
-            next(err); // Pass error to the error handler
+            next(err);
         }
     });
 
-    // Delete a specific course by ID
-    app.delete('/courses/delete/:id', async (req, res, next) => {
+    app.put('/courses/:id/sections/sorting', async (req, res, next) => {
         try {
-            const { id } = req.params;
-            const deletedCourse = await prisma.course.delete({
-                where: { id: parseInt(id) }
-            });
-            res.status(200).json({ message: 'Course deleted', deletedCourse });
+            const { id } = req.params; // Get course ID from request parameters
+            const { sections } = req.body; // Get sections from request body
+            console.log("Updating sections sorting for course with id:", id);
+            console.log("Sections:", sections);
+            // Call the service method to update sections sorting (you need to implement this method in your CourseService)
+            const updatedSections = await service.UpdateSectionsSorting(id, sections);
+            res.status(200).json(updatedSections);
         } catch (err) {
-            next(err); // Pass error to the error handler
+            next(err);
         }
-    });
-
-    // Update a specific course by ID
-    app.put('/courses/update/:id', async (req, res, next) => {
-        try {
-            const { id } = req.params;
-            const {
-                thumbnail_url, introduction, difficulty_level, price,
-                discounted_price, requirements, duration, introduction_video_link
-            } = req.body;
-
-            const updateData = {
-                thumbnail_url,
-                introduction,
-                difficulty_level,
-                price,
-                discounted_price,
-                requirements,
-                duration,
-                introduction_video_link
-            };
-
-            const updatedCourse = await prisma.course.update({
-                where: { id: parseInt(id) },
-                data: updateData
-            });
-
-            res.status(200).json(updatedCourse);
-        } catch (err) {
-            next(err); // Pass error to the error handler
-        }
-    });
+    }); 
 
 
-    
+ 
+
+
+
+
+
+
+
+
 
 };
