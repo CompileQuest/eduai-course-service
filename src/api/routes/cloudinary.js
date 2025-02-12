@@ -27,4 +27,17 @@ module.exports = (app) => {
             next(err);
         }
     });
+
+
+    // Updated route to get Cloudinary signed URL using the service layer
+    app.get('/cloudinary/content-uploaded', async (req, res, next) => {
+        const { courseId } = req.body;
+        console.log(courseId);
+        try {
+            const result = await generateSignedUrl(courseId, "video");
+            res.status(200).json({ message: "Signed URL generated successfully", result });
+        } catch (err) {
+            next(err);
+        }
+    });
 };

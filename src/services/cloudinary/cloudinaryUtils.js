@@ -1,27 +1,26 @@
-const { cloudinary } = require("../../config/cloudinary");
+const cloudinary = require("cloudinary").v2;
 
 // Function to generate a signed URL for uploading
-const generateSignedUrl = (courseId, resourceType) => {
-    // Ensure Cloudinary is configured
-    if (!cloudinary.config().cloud_name) {
-        throw new Error("Cloudinary configuration is missing.");
+const generateSignedUrl = async (courseId) => {
+    try {
+        const folderPath = `courses/${courseId}/videos`;
+
+        const timestamp = Math.round(new Date().getTime() / 1000);
+        const signature = cloudinary.utils.api_sign_request(
+            { timestamp, folder: folderPath },
+            process.env.CLOUDINARY_API_SECRET
+        );
+
+        return {
+            folder: folderPath,
+            timestamp,
+            signature,
+            apiKey: process.env.CLOUDINARY_API_KEY,
+        };
+    } catch (error) {
+        console.error("Error generating signed URL:", error);
+        throw new Error("Could not generate signed URL");
     }
-
-    // Define the folder where the file will be uploaded
-    const folder = `courses/${courseId}/videos`;
-
-    // Set expiration timestamp (1 hour from now)
-    const timestamp = Math.floor(Date.now() / 1000) + 3600;
-
-    // Construct the upload URL
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudinary.config().cloud_name}/${resourceType}/upload`;
-
-    // Return only the necessary data for the frontend
-    return {
-        url: uploadUrl,
-        timestamp: timestamp,
-        folder: folder,
-    };
 };
 
 module.exports = {
