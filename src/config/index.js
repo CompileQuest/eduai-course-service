@@ -6,7 +6,9 @@ require('dotenv').config({ path: envFile });
 // Define required environment variables
 const requiredEnvVars = {
     PORT: process.env.PORT,
-    DATABASE_URL: process.env.DATABASE_URL
+    DATABASE_URL: process.env.DATABASE_URL,
+    SVIX_API_URL: process.env.SVIX_API_URL,
+    SVIX_AUTH_TOKEN: process.env.SVIX_AUTH_TOKEN,
 };
 
 // Check if all required environment variables exist
@@ -27,4 +29,6 @@ if (missingVars.length > 0) {
 module.exports = {
     PORT: requiredEnvVars.PORT,
     DATABASE_URL: requiredEnvVars.DATABASE_URL,
+    SVIX_API_URL: requiredEnvVars.SVIX_API_URL,
+    SVIX_AUTH_TOKEN: requiredEnvVars.SVIX_AUTH_TOKEN,
 };  // Export PORT, DATABASE_URL
