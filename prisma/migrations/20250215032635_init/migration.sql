@@ -71,13 +71,25 @@ CREATE TABLE "Section" (
 -- CreateTable
 CREATE TABLE "Video" (
     "id" TEXT NOT NULL,
-    "section_id" TEXT NOT NULL,
+    "asset_id" TEXT NOT NULL,
+    "request_id" TEXT,
     "public_id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "original_size" INTEGER NOT NULL,
-    "compressed_size" INTEGER NOT NULL,
-    "duration" INTEGER NOT NULL,
+    "secure_url" TEXT NOT NULL,
+    "playback_url" TEXT,
+    "section_id" TEXT NOT NULL,
+    "title" TEXT,
+    "format" TEXT,
+    "width" INTEGER,
+    "height" INTEGER,
+    "duration" INTEGER,
+    "bit_rate" INTEGER,
+    "frame_rate" INTEGER,
+    "folder" TEXT,
+    "audio_codec" TEXT,
+    "video_codec" TEXT,
+    "video_profile" TEXT,
+    "notification_type" TEXT,
+    "original_filename" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -162,7 +174,6 @@ CREATE TABLE "CourseTags" (
 CREATE TABLE "UserProgressVideos" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "course_id" TEXT NOT NULL,
     "section_id" TEXT NOT NULL,
     "video_id" TEXT NOT NULL,
     "is_completed" BOOLEAN NOT NULL,
@@ -173,8 +184,27 @@ CREATE TABLE "UserProgressVideos" (
     CONSTRAINT "UserProgressVideos_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "UserProgressCourse" (
+    "id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "course_id" TEXT NOT NULL,
+    "is_completed" BOOLEAN NOT NULL,
+    "completed_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserProgressCourse_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "CourseStatistics_course_id_key" ON "CourseStatistics"("course_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Video_asset_id_key" ON "Video"("asset_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Video_public_id_key" ON "Video"("public_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Tags_name_key" ON "Tags"("name");
@@ -213,10 +243,10 @@ ALTER TABLE "CourseTags" ADD CONSTRAINT "CourseTags_course_id_fkey" FOREIGN KEY 
 ALTER TABLE "CourseTags" ADD CONSTRAINT "CourseTags_tag_id_fkey" FOREIGN KEY ("tag_id") REFERENCES "Tags"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserProgressVideos" ADD CONSTRAINT "UserProgressVideos_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "UserProgressVideos" ADD CONSTRAINT "UserProgressVideos_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserProgressVideos" ADD CONSTRAINT "UserProgressVideos_video_id_fkey" FOREIGN KEY ("video_id") REFERENCES "Video"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserProgressCourse" ADD CONSTRAINT "UserProgressCourse_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -36,6 +36,18 @@ class CloudinaryService {
             throw new Error("Could not generate signed URL");
         }
     }
+
+
+
+    async processVideoUploadFromCloudinaryNotification(timestamp , signature ,payload) {
+        try {
+            console.log("this is the payload");
+            console.log(payload);
+        } catch (error) {
+            console.error("Error processing the video upload from cloudinary", error);
+            throw new Error("Could not generate signed URL");
+        }
+    }
 }
 
 module.exports = CloudinaryService;

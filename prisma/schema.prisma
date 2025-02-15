@@ -27,7 +27,7 @@ model Course {
   WhatWillYouLearn      String?              @map("what_will_you_learn")
   categories            CourseCategory[] // Many-to-many relation
   tags                  CourseTags[] // Many-to-many relation
-  userProgressVideos    UserProgressVideos[] // One-to-many relation
+  userProgressCousre    UserProgressCourse[] // One-to-many relation
   faqs                  FAQ[] // Added relation to FAQ
   createdAt             DateTime             @default(now()) @map("created_at")
   updatedAt             DateTime             @updatedAt @map("updated_at")
@@ -69,27 +69,39 @@ model Section {
   courseId           String               @map("course_id")
   sectionTitle       String               @map("section_title")
   order              Int
-  course             Course               @relation(fields: [courseId], references: [id])
   videos             Video[] // One-to-many relation
   quizzes            Quiz[] // One-to-many relation
+  course             Course               @relation(fields: [courseId], references: [id])
   userProgressVideos UserProgressVideos[] // Added relation to UserProgressVideos
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
 }
 
 model Video {
-  id             String               @id @default(uuid())
-  sectionId      String               @map("section_id")
-  publicId       String               @map("public_id")
-  title          String
-  description    String
-  originalSize   Int                  @map("original_size")
-  compressedSize Int                  @map("compressed_size")
-  duration       Int
-  section        Section              @relation(fields: [sectionId], references: [id])
-  userProgress   UserProgressVideos[] // Added reverse relation
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
+  id                String   @id @default(uuid())
+  asset_id          String   @unique
+  request_id        String? // New field for storing the request_id from Cloudinary
+  public_id         String   @unique
+  secure_url        String
+  playback_url      String?
+  sectionId         String   @map("section_id")
+  title             String?
+  format            String?
+  width             Int?
+  height            Int?
+  duration          Int?
+  bitRate           Int?     @map("bit_rate")
+  frameRate         Int?     @map("frame_rate")
+  folder            String?
+  audioCodec        String?  @map("audio_codec")
+  videoCodec        String?  @map("video_codec")
+  video_profile     String?
+  notification_type String?
+  original_filename String?
+  userProgress      UserProgressVideos[] 
+  section           Section              @relation(fields: [sectionId], references: [id])
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
 }
 
 model Quiz {
@@ -159,14 +171,24 @@ model CourseTags {
 model UserProgressVideos {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
-  courseId    String    @map("course_id")
   sectionId   String    @map("section_id")
   videoId     String    @map("video_id")
   isCompleted Boolean   @map("is_completed")
   completedAt DateTime? @map("completed_at")
-  course      Course    @relation(fields: [courseId], references: [id])
   section     Section   @relation(fields: [sectionId], references: [id])
   video       Video     @relation(fields: [videoId], references: [id])
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+}
+
+
+model UserProgressCourse{
+  id         String    @id @default(uuid())
+  userId      String    @map("user_id")
+  courseId    String    @map("course_id")
+  isCompleted Boolean   @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  course      Course    @relation(fields: [courseId], references: [id])
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 }

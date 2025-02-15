@@ -7,8 +7,8 @@ const CourseService = require('../../services/course-service');
 module.exports = (app) => {
     const service = new CourseService();
 
-    app.get('/testing', (req, res) => {
-        res.send('Hello World');
+    app.get('/', (req, res) => {
+        res.send('Hello World Cousre service is responding ');
     });
 
     app.get('/categories', async (req, res, next) => {

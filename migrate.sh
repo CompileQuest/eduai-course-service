@@ -6,3 +6,4 @@ fi
 npx prisma migrate dev --name init
 
 node prisma/seed/categorySeed.js
+node prisma/seed/createCourse.js
