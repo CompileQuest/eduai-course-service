@@ -10,7 +10,7 @@ const databaseConnection = async () => {
     } catch (err) {
         console.error('Error connecting to PostgreSQL:', err);
         process.exit(1);
-    }
+    } 
 };
 
 module.exports = { databaseConnection };

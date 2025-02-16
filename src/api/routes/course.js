@@ -3,9 +3,29 @@ const prisma = new PrismaClient(); // Instantiate Prisma Client
 const upload = require('../../middleware/upload');
 const { authMiddleware } = require('../../middleware/auth.middleware');
 const CourseService = require('../../services/course-service');
+const AppError = require('../../utils/app-error'); // Change this import
 
 module.exports = (app) => {
     const service = new CourseService();
+
+
+    app.get("/test-error", async (req, res, next) => {
+        console.log("hello");
+        try {
+            throw new BadRequestError("not good on this")
+            res.status(200).send('<html><body><h1>user service is working</h1></body></html>');
+        } catch (err) {
+            next(err);
+        }
+    }); 
+
+
+
+
+    app.get('/test-api-error', (req, res, next) => {
+        next(new APIError("CustomError", STATUS_CODES.BAD_REQUEST, "This is a custom API error"));
+    });
+
 
     app.get('/', (req, res) => {
         res.send('Hello World Cousre service is responding ');
@@ -88,9 +108,12 @@ module.exports = (app) => {
             const courseContent = await service.FetchCourseContentById(id);
             res.status(200).json(courseContent);
         } catch (err) {
-            next(err);
+            //    console.log("form api layer");
+            //  console.log(err);
+            next(err); // Pass error to global error handler
         }
     });
+
 
     app.put('/courses/:id/sections/sorting', async (req, res, next) => {
         try {
@@ -104,7 +127,7 @@ module.exports = (app) => {
         } catch (err) {
             next(err);
         }
-    }); 
+    });
 
 
 

@@ -78,27 +78,28 @@ model Section {
 }
 
 model Video {
-  id                String   @id @default(uuid())
-  asset_id          String   @unique
+  id                String               @id @default(uuid())
+  asset_id          String               @unique
   request_id        String? // New field for storing the request_id from Cloudinary
-  public_id         String   @unique
+  public_id         String               @unique
   secure_url        String
   playback_url      String?
-  sectionId         String   @map("section_id")
+  sectionId         String               @map("section_id")
   title             String?
   format            String?
   width             Int?
   height            Int?
   duration          Int?
-  bitRate           Int?     @map("bit_rate")
-  frameRate         Int?     @map("frame_rate")
+  bitRate           Int?                 @map("bit_rate")
+  frameRate         Int?                 @map("frame_rate")
   folder            String?
-  audioCodec        String?  @map("audio_codec")
-  videoCodec        String?  @map("video_codec")
+  audioCodec        String?              @map("audio_codec")
+  videoCodec        String?              @map("video_codec")
   video_profile     String?
   notification_type String?
   original_filename String?
-  userProgress      UserProgressVideos[] 
+  order             Int? // New field for ordering videos
+  userProgress      UserProgressVideos[]
   section           Section              @relation(fields: [sectionId], references: [id])
   createdAt         DateTime             @default(now()) @map("created_at")
   updatedAt         DateTime             @updatedAt @map("updated_at")
@@ -181,9 +182,8 @@ model UserProgressVideos {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 }
 
-
-model UserProgressCourse{
-  id         String    @id @default(uuid())
+model UserProgressCourse {
+  id          String    @id @default(uuid())
   userId      String    @map("user_id")
   courseId    String    @map("course_id")
   isCompleted Boolean   @map("is_completed")

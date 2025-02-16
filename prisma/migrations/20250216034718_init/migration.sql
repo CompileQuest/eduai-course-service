@@ -90,6 +90,7 @@ CREATE TABLE "Video" (
     "video_profile" TEXT,
     "notification_type" TEXT,
     "original_filename" TEXT,
+    "order" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

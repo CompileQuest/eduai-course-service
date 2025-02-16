@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { APIError, STATUS_CODES } = require('../../utils/app-errors');
-const { AppError } = require('../../utils/app-errors');
+const { APIError, STATUS_CODES } = require('../../utils/error-handler');
+const { AppError } = require('../../utils/error-handler');
 
 class CourseRepository {
     constructor() {
@@ -225,9 +225,10 @@ class CourseRepository {
         }
     }
 
+    // for now this only is used for showing the section edit later to make function that only shows section
     async FetchCourseContentById(courseId) {
         try {
-            return await this.prisma.course.findUnique({
+            const course = await prisma.course.findUnique({
                 where: { id: courseId },
                 select: {
                     sections: {
@@ -240,19 +241,75 @@ class CourseRepository {
                                 select: {
                                     id: true,
                                     title: true,
-                                    description: true,
-                                    duration: true
-                                }
-                            }
-                        }
-                    }
-                }
+                                    duration: true,
+                                },
+                            },
+                        },
+                    },
+                },
             });
-        } catch (err) {
-            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course Content');
+            return course;
+        } catch (error) {
+            console.error('Error in repository layer:', error);
+            throw new APIError(
+                'Error Fetching Course',
+                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
+                error.message
+            );
         }
     }
 
+    async SaveVideoToSection(payload) {
+        try {
+            // Extract fields
+            const { sectionId, courseId, title } = payload.context.custom;
+            const {
+                asset_id,
+                request_id,
+                public_id, // Matches the Prisma schema
+                secure_url,
+                playback_url,
+                format,
+                width,
+                height,
+                duration,
+                folder,
+                notification_type,
+                original_filename,
+            } = payload;
+
+            // Create the video in the database
+            const video = await this.prisma.video.create({
+                data: {
+                    asset_id, // Matches the Prisma schema
+                    request_id, // Matches the Prisma schema
+                    public_id, // Matches the Prisma schema
+                    secure_url, // Matches the Prisma schema
+                    playback_url, // Matches the Prisma schema
+                    sectionId, // Matches the Prisma schema
+                    title, // Matches the Prisma schema
+                    format, // Matches the Prisma schema
+                    width, // Matches the Prisma schema
+                    height, // Matches the Prisma schema
+                    duration, // Matches the Prisma schema
+                    folder, // Matches the Prisma schema
+                    notification_type, // Matches the Prisma schema
+                    original_filename, // Matches the Prisma schema
+                },
+            });
+
+            console.log("Video saved successfully:", video); // Success message
+
+            return video;
+        } catch (error) {
+            console.error("Error saving video to section:", error);
+            throw new APIError(
+                'Error saving video to section',
+                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
+                error.message
+            );
+        }
+    }
 
     async UpdateSectionsSorting(courseId, sections) {
         try {
@@ -283,7 +340,6 @@ class CourseRepository {
         }
     }
 
-
 }
 
-module.exports = CourseRepository;
+module.exports = CourseRepository; 

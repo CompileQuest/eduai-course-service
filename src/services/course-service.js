@@ -1,5 +1,5 @@
 const CourseRepository = require('../database/repository/course-repository');
-const { APIError } = require('../utils/app-errors');
+const { APIError, STATUS_CODES, BadRequestError } = require('../utils/error-handler');
 const { uploadImage } = require('./cloudinary/image-uploader');
 
 class CourseService {
@@ -99,9 +99,23 @@ class CourseService {
         return await this.repository.FetchCourseTemplate();
     }
 
-
     async FetchCourseContentById(courseId) {
-        return await this.repository.FetchCourseContentById(courseId);
+        try {
+            const course = await this.repository.FetchCourseContentById(courseId);
+
+            if (!course) {
+                throw new APIError("Not Found", STATUS_CODES.NOT_FOUND, `No course found for courseId: ${courseId}`, false);
+            }
+            return course;
+        } catch (error) {
+            // Re-throw the error with additional context if needed
+            if (error instanceof APIError) {
+                throw error; // Pass the original APIError
+            } else {
+                // Pass the original error message and status code
+                throw new APIError('Database Error', error.statusCode || STATUS_CODES.INTERNAL_SERVER_ERROR, `Unable to fetch course content for courseId: ${courseId}. Original error: ${error.message}`);
+            }
+        }
     }
 
     async UpdateSectionsSorting(courseId, sections) {

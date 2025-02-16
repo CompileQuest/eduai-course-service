@@ -79,6 +79,7 @@ async function main() {
                         title: `Lecture ${j} - Important Topic`,
                         format: "mp4",
                         width: 1920,
+                        order:j,
                         height: 1080,
                         duration: Math.floor(Math.random() * 600) + 300, // Random duration (5-15 min)
                         bitRate: 4500,

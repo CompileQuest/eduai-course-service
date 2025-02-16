@@ -1,22 +1,22 @@
 const { createLogger, transports } = require('winston');
-const { AppError } = require('./app-errors');
+const { AppError } = require('./app-error.js');
 
 
 const LogErrors = createLogger({
     transports: [
-      new transports.Console(),
-      new transports.File({ filename: 'app_error.log' })
+        new transports.Console(),
+        new transports.File({ filename: 'app_error.log' })
     ]
-  });
-    
+});
 
-  class ErrorLogger {
-    constructor() {}
+
+class ErrorLogger {
+    constructor() { }
 
     async logError(err) {
         // Capture the current date and time for the log entry
         const timestamp = new Date().toISOString();
-        
+
         console.log('==================== Start Error Logger ===============');
         console.log(`Error Type: ${err.name}`); // Log the type of the error (e.g., TypeError)
         console.log('\n')
@@ -35,7 +35,7 @@ const LogErrors = createLogger({
 
 
         console.log('==================== End Error Logger ===============');
-        
+
         // This is a winston loger can use it or get rid of it for now i prefer mine the custome format i in the above code
         LogErrors.log({
             private: true,
@@ -55,8 +55,9 @@ const LogErrors = createLogger({
     }
 }
 
-const ErrorHandler = async(err,req,res,next) => {
-    
+const ErrorHandler = async (err, req, res, next) => {
+
+    console.log(' i am aclled here')
     const errorLogger = new ErrorLogger();
 
     process.on('uncaughtException', (reason, promise) => {
@@ -66,26 +67,26 @@ const ErrorHandler = async(err,req,res,next) => {
 
     process.on('uncaughtException', (error) => {
         errorLogger.logError(error);
-        if(errorLogger.isTrustError(err)){
+        if (errorLogger.isTrustError(err)) {
             //process exist // need restart
         }
     })
-    
+
     // console.log(err.description, '-------> DESCRIPTION')
     // console.log(err.message, '-------> MESSAGE')
     // console.log(err.name, '-------> NAME')
-    if(err){
+    if (err) {
         await errorLogger.logError(err);
-        if(errorLogger.isTrustError(err)){
-            if(err.errorStack){
+        if (errorLogger.isTrustError(err)) {
+            if (err.errorStack) {
                 const errorDescription = err.errorStack;
-                return res.status(err.statusCode).json({'message': errorDescription})
+                return res.status(err.statusCode).json({ 'message': errorDescription })
             }
-            return res.status(err.statusCode).json({'message': err.message })
-        }else{
+            return res.status(err.statusCode).json({ 'message': err.message })
+        } else {
             //process exit // terriablly wrong with flow need restart
         }
-        return res.status(err.statusCode).json({'message': err.message})
+        return res.status(err.statusCode).json({ 'message': err.message })
     }
     next();
 }

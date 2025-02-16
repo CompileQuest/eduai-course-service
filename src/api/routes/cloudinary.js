@@ -19,33 +19,29 @@ module.exports = (app) => {
 
     // Updated route to get Cloudinary signed URL using the service layer
     app.get('/cloudinary/signed-upload-url-video', async (req, res, next) => {
-        const { courseId, title } = req.query; // Extract title from req.query
+        const { courseId, sectionId, title } = req.query; // Extract title from req.query
         try {
-            const result = await service.generateSignedUploadUrlVideo(courseId, title); // Pass title to the service method
+            const result = await service.generateSignedUploadUrlVideo(courseId, sectionId, title); // Pass title to the service method
             res.status(200).json({ message: "Signed URL generated successfully", result });
         } catch (err) {
             next(err);
         }
     });
 
-
-
-
     // Updated route to return a simple Hello World message
-    app.get(
+    app.post(
         "/cloudinary/webhook/video-uploaded",
         validate(videoUploadedSchema), // Use validation middleware
         async (req, res, next) => {
             try {
-                const timestamp = req.headers["x-cld-timestamp"] ;
-                const signature = req.headers["x-cld-signature"] ;
+                const timestamp = req.headers["x-cld-timestamp"];
+                const signature = req.headers["x-cld-signature"];
                 const payload = req.body; // Already validated!
-
-                await videoController.processVideoUploadFromCloudinaryNotification(timestamp, signature, payload);
-                res.status(200).json({ message: "Webhook received successfully!" });
+                await service.processVideoUploadFromCloudinaryNotification(timestamp, signature, payload);
+                res.status(200).json({ message: "Webhook received successfully!" }); // Acknowledgment message
             } catch (err) {
                 next(err);
             }
         }
     );
-};
+}; 

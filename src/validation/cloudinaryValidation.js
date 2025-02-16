@@ -8,7 +8,13 @@ const videoUploadedSchema = z.object({
     public_id: z.string(),
     secure_url: z.string().url(),
     playback_url: z.string().url().optional(),
-    sectionId: z.string(),
+    context: z.object({
+        custom: z.object({
+            sectionId: z.string(),
+            courseId: z.string(),
+            title: z.string()
+        }),
+    }),
     title: z.string().optional(),
     format: z.string().optional(),
     width: z.number().optional(),
