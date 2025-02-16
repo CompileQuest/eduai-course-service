@@ -1,5 +1,5 @@
 const cloudinary = require("cloudinary").v2;
-const CourseRepository = require('../../database/repository/course-repository')
+const CourseRepository = require('../src/database/repository/course-repository')
 class CloudinaryService {
     constructor() {
         this.repository = new CourseRepository();

@@ -1,20 +1,21 @@
-// index.js
-// src/index.js
 const express = require('express');
-const expressApp = require('./express-app');  // Import expressApp function from expressapp.js
-const { PORT } = require('./config');  // Import PORT from the config
-
+const expressApp = require('./express-app');
+const { PORT , TUNNEL_DOMAIN } = require('./config');
+const { startTunnel } = require('./utils/runTunnel'); // Import your tunnel script
 
 const StartServer = async () => {
-    const app = express();  // Initialize Express app
+    const app = express();
 
-    // Await the expressApp function which configures the app
     await expressApp(app);
 
-    // Start listening on the configured port
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
         console.log(`Course Service is running on port ${PORT}`);
-    }).on('error', (err) => {
+
+        // Start the tunnel after the server is running
+        startTunnel(PORT, TUNNEL_DOMAIN);
+    });
+
+    server.on('error', (err) => {
         console.log(err);
         process.exit();
     });
