@@ -5,11 +5,12 @@ const { authMiddleware } = require('../../../middleware/auth.middleware');
 const CloudinaryService = require('../../../services/cloudinary/cloudinaryUtils');
 const validate = require('../../../middleware/validate');
 const { videoUploadedSchema } = require('../../../validation/cloudinaryValidation');
+const express = require('express');
 
-module.exports = (app) => {
     const service = new CloudinaryService();
+const router = express.Router();
 
-    app.get('/cloudinary/testing', async (req, res, next) => {
+router.get('/testing', async (req, res, next) => {
         try {
             res.status(200).json({ message: 'Cloudinary testing' });
         } catch (err) {
@@ -18,7 +19,7 @@ module.exports = (app) => {
     });
 
     // Updated route to get Cloudinary signed URL using the service layer
-    app.get('/cloudinary/signed-upload-url-video', async (req, res, next) => {
+router.get('/cloudinary/signed-upload-url-video', async (req, res, next) => {
         const { courseId, sectionId, title } = req.query; // Extract title from req.query
         try {
             const result = await service.generateSignedUploadUrlVideo(courseId, sectionId, title); // Pass title to the service method
@@ -29,7 +30,7 @@ module.exports = (app) => {
     });
 
     // Updated route to return a simple Hello World message
-    app.post(
+    router.post(
         "/cloudinary/webhook/video-uploaded",
         validate(videoUploadedSchema), // Use validation middleware
         async (req, res, next) => {
@@ -44,4 +45,5 @@ module.exports = (app) => {
             }
         }
     );
-}; 
+
+module.exports = router;

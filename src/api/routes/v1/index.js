@@ -1,3 +1,4 @@
 module.exports = {
-    CourseRouter: require('./course')
+    CourseRouter: require('./course'),
+    CloudinaryRouter: require('./cloudinary')
 };
