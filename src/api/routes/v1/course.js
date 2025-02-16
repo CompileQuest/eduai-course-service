@@ -1,37 +1,40 @@
 const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
 const prisma = new PrismaClient(); // Instantiate Prisma Client
-const upload = require('../../middleware/upload');
-const { authMiddleware } = require('../../middleware/auth.middleware');
-const CourseService = require('../../services/course-service');
-const AppError = require('../../utils/app-error'); // Change this import
-
-module.exports = (app) => {
-    const service = new CourseService();
+const upload = require('../../../middleware/upload');
+const { authMiddleware } = require('../../../middleware/auth.middleware');
+const CourseService = require('../../../services/course-service');
+const { BadRequestError } = require('../../../utils/app-error'); // Change this import
+const express = require('express');
 
 
-    app.get("/test-error", async (req, res, next) => {
+const service = new CourseService();
+const router = express.Router();
+
+
+
+router.get("/test-error", async (req, res, next) => {
         console.log("hello");
         try {
             throw new BadRequestError("not good on this")
             res.status(200).send('<html><body><h1>user service is working</h1></body></html>');
         } catch (err) {
-            next(err);
+            next(err); 
         }
-    }); 
+    });
 
 
 
 
-    app.get('/test-api-error', (req, res, next) => {
+router.get('/test-api-error', (req, res, next) => {
         next(new APIError("CustomError", STATUS_CODES.BAD_REQUEST, "This is a custom API error"));
     });
 
 
-    app.get('/', (req, res) => {
+router.get('/', (req, res) => {
         res.send('Hello World Cousre service is responding ');
     });
 
-    app.get('/categories', async (req, res, next) => {
+router.get('/categories', async (req, res, next) => {
         try {
             const categories = await service.FetchCategories();
 
@@ -43,7 +46,7 @@ module.exports = (app) => {
     });
 
 
-    app.post('/courses/create-course-template',
+router.post('/courses/create-course-template',
         authMiddleware,
         upload.single('thumbnail'),
         async (req, res, next) => {
@@ -66,7 +69,7 @@ module.exports = (app) => {
         }
     );
 
-    app.get('/courses/draft-courses', async (req, res, next) => {
+router.get('/courses/draft-courses', async (req, res, next) => {
         try {
             const courseTemplate = await service.FetchCourseTemplate();
             res.status(200).json(courseTemplate);
@@ -76,7 +79,7 @@ module.exports = (app) => {
     });
 
 
-    app.delete('/courses/delete-course/:id', async (req, res, next) => {
+router.delete('/courses/delete-course/:id', async (req, res, next) => {
         try {
             const { id } = req.params;
             console.log("Deleting course with id:", id);
@@ -88,7 +91,7 @@ module.exports = (app) => {
     });
 
 
-    app.get('/courses/draft-courses/:id', async (req, res, next) => {
+router.get('/courses/draft-courses/:id', async (req, res, next) => {
         try {
             const { id } = req.params;
             console.log("Fetching course with id:", id);
@@ -101,7 +104,7 @@ module.exports = (app) => {
 
 
 
-    app.get('/courses/:id/content', async (req, res, next) => {
+router.get('/courses/:id/content', async (req, res, next) => {
         try {
             const { id } = req.params;
             console.log("Fetching course content with id:", id);
@@ -115,7 +118,7 @@ module.exports = (app) => {
     });
 
 
-    app.put('/courses/:id/sections/sorting', async (req, res, next) => {
+router.put('/courses/:id/sections/sorting', async (req, res, next) => {
         try {
             const { id } = req.params; // Get course ID from request parameters
             const { sections } = req.body; // Get sections from request body
@@ -132,4 +135,5 @@ module.exports = (app) => {
 
 
 
-};
+module.exports = router;
+

@@ -2,8 +2,9 @@
 const express = require('express');
 const cors = require('cors');
 const { databaseConnection } = require('./database/connection');
-
-
+const apiRoutes = require('./api/routes/index')
+const errorHandler = require('./utils/error-handler');
+const ErrorHandler = require('./utils/error-handler');
 module.exports = async (app) => {
   // Middleware
   app.use(express.json());
@@ -35,32 +36,14 @@ module.exports = async (app) => {
 
   // Connect to Database
   await databaseConnection();
-  
+
   // Routes
-  require('./api/routes/course')(app);   // Import course routes
-  require('./api/routes/review')(app);  // Import review routes
-  require('./api/routes/section')(app); // Import section routes
-  require('./api/routes/video')(app);   // Import video routes
-  require('./api/routes/cloudinary')(app); // Import cloudinary routes
+  apiRoutes(app);
+  //require('./api/routes/v1/cloudinary')(app); // Import cloudinary routes
 
-  
-  app.use((err, req, res, next) => {  // <-- Use "err" instead of "error"
-    console.log("🔥 Intercepted error:", err);
 
-    let statusCode = err.statusCode || 500;
+  app.use(ErrorHandler);
 
-    // Force 500 errors to appear as 404
-    if (statusCode === 500) {
-      statusCode = 404;
-    }
 
-    res.status(statusCode).json({
-      success: false,
-      statusCode,
-      message: err.message || "Custom error response"
-    });
-  });
 
-  
-  
 };

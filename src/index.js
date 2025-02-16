@@ -14,6 +14,9 @@ const StartServer = async () => {
     // Start listening on the configured port
     app.listen(PORT, () => {
         console.log(`Course Service is running on port ${PORT}`);
+    }).on('error', (err) => {
+        console.log(err);
+        process.exit();
     });
 };
 

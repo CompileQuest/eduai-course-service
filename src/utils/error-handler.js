@@ -56,39 +56,40 @@ class ErrorLogger {
 }
 
 const ErrorHandler = async (err, req, res, next) => {
-
-    console.log(' i am aclled here')
     const errorLogger = new ErrorLogger();
 
-    process.on('uncaughtException', (reason, promise) => {
-        console.log(reason, 'UNHANDLED');
-        throw reason; // need to take care
-    })
+    // Log the error
+    await errorLogger.logError(err);
 
-    process.on('uncaughtException', (error) => {
-        errorLogger.logError(error);
-        if (errorLogger.isTrustError(err)) {
-            //process exist // need restart
-        }
-    })
+    // Determine the response data
+    const statusCode = err.statusCode || STATUS_CODES.INTERNAL_ERROR; // Default to 500 if statusCode is missing
+    const response = {
+        success: false,
+        statusCode: statusCode,
+        error: err.name || 'API Error', // Error name (e.g., "BadRequestError", "ValidationError")
+        message: err.message || 'Internal Server Error', // Error message
+        description: err.description || 'No description provided', // Error description
+    };
 
-    // console.log(err.description, '-------> DESCRIPTION')
-    // console.log(err.message, '-------> MESSAGE')
-    // console.log(err.name, '-------> NAME')
-    if (err) {
-        await errorLogger.logError(err);
-        if (errorLogger.isTrustError(err)) {
-            if (err.errorStack) {
-                const errorDescription = err.errorStack;
-                return res.status(err.statusCode).json({ 'message': errorDescription })
-            }
-            return res.status(err.statusCode).json({ 'message': err.message })
-        } else {
-            //process exit // terriablly wrong with flow need restart
-        }
-        return res.status(err.statusCode).json({ 'message': err.message })
+    // If the error has additional details (e.g., errorStack), include them in the response
+    if (err.errorStack) {
+        response.stack = err.errorStack; // Include the error stack trace
     }
-    next();
-}
+
+    // Check if the error is trusted (operational)
+    if (errorLogger.isTrustError(err)) {
+        return res.status(statusCode).json(response);
+    }
+
+    // If the error is not trusted, log it and respond with a generic error message
+    console.error('🔥 Critical Error:', err);
+    return res.status(500).json({
+        success: false,
+        statusCode: 500,
+        error: 'Internal Server Error',
+        message: 'Something went wrong!',
+        description: 'An unexpected error occurred. Please try again later.',
+    });
+};
 
 module.exports = ErrorHandler;

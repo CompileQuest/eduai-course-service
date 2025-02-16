@@ -1,10 +1,10 @@
 const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
 const prisma = new PrismaClient(); // Instantiate Prisma Client
-const upload = require('../../middleware/upload');
-const { authMiddleware } = require('../../middleware/auth.middleware');
-const CloudinaryService = require('../../services/cloudinary/cloudinaryUtils');
-const validate = require('../../middleware/validate');
-const { videoUploadedSchema } = require('../../validation/cloudinaryValidation');
+const upload = require('../../../middleware/upload');
+const { authMiddleware } = require('../../../middleware/auth.middleware');
+const CloudinaryService = require('../../../services/cloudinary/cloudinaryUtils');
+const validate = require('../../../middleware/validate');
+const { videoUploadedSchema } = require('../../../validation/cloudinaryValidation');
 
 module.exports = (app) => {
     const service = new CloudinaryService();

@@ -227,36 +227,28 @@ class CourseRepository {
 
     // for now this only is used for showing the section edit later to make function that only shows section
     async FetchCourseContentById(courseId) {
-        try {
-            const course = await prisma.course.findUnique({
-                where: { id: courseId },
-                select: {
-                    sections: {
-                        orderBy: { order: 'asc' },
-                        select: {
-                            id: true,
-                            sectionTitle: true,
-                            order: true,
-                            videos: {
-                                select: {
-                                    id: true,
-                                    title: true,
-                                    duration: true,
-                                },
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            select: {
+                sections: {
+                    orderBy: { order: 'asc' },
+                    select: {
+                        id: true,
+                        sectionTitle: true,
+                        order: true,
+                        videos: {
+                            select: {
+                                id: true,
+                                title: true,
+                                duration: true,
                             },
                         },
                     },
                 },
-            });
-            return course;
-        } catch (error) {
-            console.error('Error in repository layer:', error);
-            throw new APIError(
-                'Error Fetching Course',
-                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
-                error.message
-            );
-        }
+            },
+        });
+
+        return course; // No "not found" check here
     }
 
     async SaveVideoToSection(payload) {
