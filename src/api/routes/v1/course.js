@@ -5,12 +5,16 @@ const { authMiddleware } = require('../../../middleware/auth.middleware');
 const CourseService = require('../../../services/course-service');
 const { BadRequestError } = require('../../../utils/app-error'); // Change this import
 const express = require('express');
+const { ServerDescriptionChangedEvent } = require('mongodb');
 
 
 const service = new CourseService();
 const router = express.Router();
 
 
+router.get('/', (req, res) => {
+    res.send('Hello World Cousre service is responding ');
+});
 
 router.get("/test-error", async (req, res, next) => {
         console.log("hello");
@@ -30,9 +34,7 @@ router.get('/test-api-error', (req, res, next) => {
     });
 
 
-router.get('/', (req, res) => {
-        res.send('Hello World Cousre service is responding ');
-    });
+
 
 router.get('/categories', async (req, res, next) => {
         try {
@@ -67,7 +69,25 @@ router.post('/courses/create-course-template',
                 next(err);
             }
         }
-    );
+);
+    
+
+
+router.put('/courses/:courseId/thumbnail-upload', authMiddleware,
+    upload.single('thumbnail'), async (req, res, next) => {
+        try {
+            const { courseId } = req.params;
+            const image = req.file;
+            console.log("this is the course id  ", courseId);
+            console.log("this is the imaeg ", image);
+
+            const course = await service.updateThumbNail(courseId,image);
+        res.status(200).json(course);
+        } catch (err) { 
+            next(err); 
+        }
+});
+    
 
 router.get('/courses/draft-courses', async (req, res, next) => {
         try {
@@ -100,7 +120,11 @@ router.get('/courses/draft-courses/:id', async (req, res, next) => {
         } catch (err) {
             next(err);
         }
-    });
+});
+    
+
+
+
 
 
 
@@ -130,8 +154,42 @@ router.put('/courses/:id/sections/sorting', async (req, res, next) => {
         } catch (err) {
             next(err);
         }
-    });
+});
+    
 
+router.put('/courses/:id/sections/videos/sorting', async (req, res, next) => {
+    try {
+        const { id } = req.params; // Get course ID from request parameters
+        const { sections } = req.body; // Get sections from request body
+        console.log("Updating sections sorting for course with id:", id);
+        console.log("i am called here ");
+        // Log the full structure of sections
+       // console.dir(sections, { depth: null, colors: true });
+
+        // Call the service method to update sections sorting (you need to implement this method in your CourseService)
+        const updatedSections = await service.UpdateVideoSorting(id, sections);
+        res.status(200).json(updatedSections);
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.post('/courses/:cousreId/addSection', async (req, res, next) => {
+    try {
+        const { cousreId} = req.params; // Get course ID from request parameters
+        const { title } = req.body; // Get sections from request body
+        console.log("the id of the course id ", cousreId);
+        console.log("the title of the course id ", title);
+        // Log the full structure of sections
+        // console.dir(sections, { depth: null, colors: true });
+
+        // Call the service method to update sections sorting (you need to implement this method in your CourseService)
+        const addedSection = await service.addSection(cousreId, title);
+        res.status(200).json(addedSection);
+    } catch (err) {
+        next(err);
+    } 
+});
 
 
 

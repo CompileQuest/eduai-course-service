@@ -1,12 +1,15 @@
 const express = require('express');
 const expressApp = require('./express-app');
 const { PORT , TUNNEL_DOMAIN } = require('./config');
-const { startTunnel } = require('./utils/runTunnel'); // Import your tunnel script
-
+const { killPort, startTunnel } = require('./utils/systemUtils');
 const StartServer = async () => {
-    const app = express();
+    await killPort(PORT); 
+    const app = express(); 
 
     await expressApp(app);
+
+ 
+
 
     const server = app.listen(PORT, () => {
         console.log(`Course Service is running on port ${PORT}`);

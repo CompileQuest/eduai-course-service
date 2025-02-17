@@ -54,6 +54,9 @@ class CourseRepository {
                             id: true,
                             sectionTitle: true,
                             order: true,
+                        },
+                        orderBy: {
+                            order:'asc'
                         }
                     },
                 },
@@ -64,6 +67,19 @@ class CourseRepository {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course');
         }
     }
+
+
+
+    async FetchCourseThumbnail(courseId) {
+        return prisma.course.findUnique({
+            where: { id: courseId },
+            select: {
+                thumbnailUrl: true,
+                thumbnailPublicId: true
+            }
+        });
+    }
+
 
     async DeleteCourseById(courseId) {
         try {
@@ -301,8 +317,25 @@ class CourseRepository {
                 error.message
             );
         }
+    } 
+
+    // In your repository class or file
+
+    async getSectionsByCourse(courseId) {
+        return prisma.section.findMany({
+            where: { courseId: courseId },  // Filter sections by course ID
+            select: { id: true },  // Only select the section IDs
+        });
     }
 
+    
+    async updateVideoOrder(videoId, newOrder) {
+        // Update the video order in the database
+        return prisma.video.update({
+            where: { id: videoId }, // Find the video by its ID
+            data: { order: newOrder }, // Set the new order
+        });
+    }
     async UpdateSectionsSorting(courseId, sections) {
         try {
             // Verify that all sections belong to the specified course
@@ -331,6 +364,28 @@ class CourseRepository {
             throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Update Sections Sorting');
         }
     }
+
+
+    async getMaxOrderOfSectionsByCourseId(courseId) {
+        const section = await prisma.section.findFirst({
+            where: { courseId },
+            orderBy: { order: 'desc' },
+            select: { order: true }, // Only select the 'order' field
+        });
+        return section ? section.order : 0; // If no section is found, return 0
+    }
+
+
+    async addSection(courseId, title, newOrder) {
+        return prisma.section.create({
+            data: {
+                sectionTitle: title,
+                order: newOrder,
+                courseId,
+            },
+        });
+    }
+
 
 }
 

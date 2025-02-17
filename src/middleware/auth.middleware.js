@@ -9,7 +9,7 @@ const authMiddleware = (req, res, next) => {
             id: 'test-user-id',
             role: 'instructor',
             // Add any other user properties you might need
-        };
+        }; 
         return next();
     }
 
