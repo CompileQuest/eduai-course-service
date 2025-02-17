@@ -191,7 +191,19 @@ router.post('/courses/:cousreId/addSection', async (req, res, next) => {
     } 
 });
 
+router.get('/:cousreId/preview', async (req, res, next) => {
+    try {
+        const { cousreId } = req.params; // Get course ID from request parameters
+
+        // Call the service method to update sections sorting (you need to implement this method in your CourseService)
+        const coursePreview = await service.getCoursePreview(cousreId);
+        res.status(200).json(coursePreview); 
+    } catch (err) {
+        next(err);
+    }
+}); 
 
 
+ 
 module.exports = router;
 

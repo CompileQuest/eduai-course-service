@@ -27,7 +27,7 @@ class CourseRepository {
     }
 
     async FetchCourseTemplateById(courseId) {
-        try {
+      
             const course = await this.prisma.course.findUnique({
                 where: { id: courseId.trim() },
                 select: {
@@ -61,11 +61,7 @@ class CourseRepository {
                     },
                 },
             });
-            if (!course) throw new Error('Course Not Found');
             return course;
-        } catch (err) {
-            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course');
-        }
     }
 
 
@@ -268,7 +264,6 @@ class CourseRepository {
     }
 
     async SaveVideoToSection(payload) {
-        try {
             // Extract fields
             const { sectionId, courseId, title } = payload.context.custom;
             const {
@@ -296,30 +291,63 @@ class CourseRepository {
                     playback_url, // Matches the Prisma schema
                     sectionId, // Matches the Prisma schema
                     title, // Matches the Prisma schema
-                    format, // Matches the Prisma schema
+                    format, // Matches the Prisma schema 
                     width, // Matches the Prisma schema
                     height, // Matches the Prisma schema
-                    duration, // Matches the Prisma schema
+                    duration, // Matches the Prisma schema  
                     folder, // Matches the Prisma schema
                     notification_type, // Matches the Prisma schema
-                    original_filename, // Matches the Prisma schema
+                    original_filename, // Matches the Prisma schema  
                 },
             });
 
             console.log("Video saved successfully:", video); // Success message
 
-            return video;
-        } catch (error) {
-            console.error("Error saving video to section:", error);
-            throw new APIError(
-                'Error saving video to section',
-                error.statusCode || STATUS_CODES.INTERNAL_ERROR,
-                error.message
-            );
-        }
+            return video; 
+
     } 
 
-    // In your repository class or file
+
+    async getCoursePreview(courseId) {
+        const course = await prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                sections: {
+                    select: {
+                        id: true,
+                        sectionTitle: true,
+                        order: true,
+                        videos: {
+                            select: {
+                                id: true,
+                                title: true,
+                                duration: true,
+                                order:true
+                            },
+                            orderBy: {
+                                order: "asc" // here i am sorting the video 
+                            }
+                        }
+                    }, orderBy: {
+                        order:"asc"
+                    }
+                },
+                reviews: true,
+                tags: true,
+                categories: true,
+                faqs: true,
+                statistics: true,
+                userProgressCousre: true, // Assuming the course progress is also needed
+            },
+        });
+ 
+        return course; 
+    }
+
+  
+
+
+    // In your repository class o r file
 
     async getSectionsByCourse(courseId) {
         return prisma.section.findMany({

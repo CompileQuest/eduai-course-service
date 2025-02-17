@@ -158,7 +158,7 @@ class CourseService {
             if (!course) {
                 throw new NotFoundError(`no resource found for courseid ${courseId}`);
             }
-            return course;
+            return course; 
         } catch (error) {
             // ✅ Check for any custom AppError (APIError, BadRequestError, etc.)
             if (error instanceof AppError) {
@@ -241,6 +241,29 @@ class CourseService {
             }
         }
     }
+
+
+
+    async getCoursePreview(courseId) {
+        try {
+            // Get max order from sections of the course
+            const coursePreview = await this.repository.getCoursePreview(courseId);
+
+            if (!coursePreview) {
+                throw new NotFoundError(`No Course Preview For Cousre With Id ${courseId}`);
+            }
+        
+
+            return ResponseHelper.success('Fetched the Cousre Preview', coursePreview);
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error
+            } else {
+                console.log(error)
+                throw new InternalServerError("An unexpected error occurred while adding the section.");
+            }
+        }
+    } 
 }
 
 

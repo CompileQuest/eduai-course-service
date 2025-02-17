@@ -46,7 +46,7 @@ function killPort(port) {
 
         process.stderr.on('data', (data) => {
             console.error(`❌ Killing Port Error: ${data}`);
-        });
+        }); 
 
         process.on('exit', (code) => {
             console.log(`✅ Killing port process exited with code: ${code}`);

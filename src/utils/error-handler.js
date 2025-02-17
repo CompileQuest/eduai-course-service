@@ -1,5 +1,5 @@
 const { createLogger, transports } = require('winston');
-const { AppError } = require('./app-error.js');
+const { AppError , STATUS_CODES } = require('./app-error.js');
 
 
 const LogErrors = createLogger({

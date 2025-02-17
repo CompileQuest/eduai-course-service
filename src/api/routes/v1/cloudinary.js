@@ -2,7 +2,7 @@ const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Cli
 const prisma = new PrismaClient(); // Instantiate Prisma Client
 const upload = require('../../../middleware/upload');
 const { authMiddleware } = require('../../../middleware/auth.middleware');
-const CloudinaryService = require('../../../../scripts/cloudinaryUtils');
+const CloudinaryService = require('../../../services/cloudinary/cloudinaryUtils');
 const validate = require('../../../middleware/validate');
 const { videoUploadedSchema } = require('../../../validation/cloudinaryValidation');
 const express = require('express');
@@ -19,7 +19,7 @@ router.get('/testing', async (req, res, next) => {
 });
 
 // Updated route to get Cloudinary signed URL using the service layer
-router.get('/cloudinary/signed-upload-url-video', async (req, res, next) => {
+router.get('/signed-upload-url-video', async (req, res, next) => {
     const { courseId, sectionId, title } = req.query; // Extract title from req.query
     try {
         const result = await service.generateSignedUploadUrlVideo(courseId, sectionId, title); // Pass title to the service method
@@ -31,19 +31,20 @@ router.get('/cloudinary/signed-upload-url-video', async (req, res, next) => {
 
 // Updated route to return a simple Hello World message
 router.post(
-    "/cloudinary/webhook/video-uploaded",
-    validate(videoUploadedSchema), // Use validation middleware
+    "/webhook/video-uploaded",
+    validate(videoUploadedSchema), // Use validation middleware 
     async (req, res, next) => {
-        try {
-            const timestamp = req.headers["x-cld-timestamp"];
+        try { 
+            const timestamp = req.headers["x-cld-timestamp"]; 
             const signature = req.headers["x-cld-signature"];
             const payload = req.body; // Already validated!
+            console.log("this is the payload", payload);
             await service.processVideoUploadFromCloudinaryNotification(timestamp, signature, payload);
             res.status(200).json({ message: "Webhook received successfully!" }); // Acknowledgment message
         } catch (err) {
             next(err);
-        }
+        } 
     }
-);
-
+);  
+ 
 module.exports = router;
