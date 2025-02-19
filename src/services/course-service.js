@@ -1,6 +1,6 @@
 const depd = require('prisma');
 const CourseRepository = require('../database/repository/course-repository');
-const { APIError, InternalServerError , AppError , NotFoundError} = require('../utils/app-error')
+const { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } = require('../utils/app-error')
 const { uploadImage } = require('./cloudinary/image-uploader');
 const { deleteImageFromCloudinary } = require('./cloudinary/cloudinary-service');
 const ResponseHelper = require('../utils/responseHelper');
@@ -70,7 +70,7 @@ class CourseService {
 
 
 
-    
+
     async DeleteCourseById(courseId) {
         return await this.repository.DeleteCourseTemplate(courseId);
     }
@@ -158,7 +158,7 @@ class CourseService {
             if (!course) {
                 throw new NotFoundError(`no resource found for courseid ${courseId}`);
             }
-            return course; 
+            return course;
         } catch (error) {
             // ✅ Check for any custom AppError (APIError, BadRequestError, etc.)
             if (error instanceof AppError) {
@@ -243,6 +243,102 @@ class CourseService {
     }
 
 
+    async deleteSectionById(courseId, sectionId, instructorId) {
+        try {
+            // Check if the instructor owns the course
+            const isOwner = await this.repository.checkOwnershipOfCourse(courseId, instructorId);
+            if (!isOwner) {
+                throw new ForbiddenError("You are not authorized to delete this section.");
+            }
+
+            // Mark the section as deleted
+            const sectionDeleted = await this.repository.markSectionAsDelete(sectionId);
+            if (!sectionDeleted) {
+                throw new InternalServerError("Failed to delete section.");
+            }
+
+            // Fetch all video IDs for the section
+            const videoIds = await this.repository.getSectionVideosIds(sectionId);
+            if (!videoIds || videoIds.length === 0) {
+                console.warn(`No videos found for section ${sectionId}.`);
+            }
+
+            // Mark all videos as deleted
+            for (const videoId of videoIds) {
+                const videoDeleted = await this.repository.markVideoDelete(videoId);
+                if (!videoDeleted) {
+                    console.warn(`Warning: Failed to delete video ${videoId}`);
+                }
+            }
+
+            // TODO: Mark quizzes as deleted (future implementation)
+            // TODO: Mark section progress as deleted (future implementation)
+
+            return ResponseHelper.success("Section and its content are deleted successfully !!");
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error in deleteSectionById:", error);
+                throw new InternalServerError("An error occurred while deleting the section.");
+            }
+        }
+    }
+
+
+    // Reusable method to check if instructor owns the course
+    async _validateInstructorOwnership(courseId, instructorId) {
+        const isOwner = await this.repository.checkOwnershipOfCourse(courseId, instructorId);
+        if (!isOwner) {
+            throw new ForbiddenError("You are not authorized to modify this section.");
+        }
+    }
+
+
+    async editSection(courseId, sectionId, instructorId, title) {
+        try {
+            // Use the reusable validation method
+            await this._validateInstructorOwnership(courseId, instructorId);
+
+            // Edit section
+            const editedSection = await this.repository.editSection(sectionId, title);
+            if (!editedSection) {
+                throw new InternalServerError("Failed to edit section.");
+            }
+
+            return ResponseHelper.success("Section title updated successfully!");
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error in editing Section title:", error);
+                throw new InternalServerError("An error occurred while editing the section.");
+            }
+        }
+    }
+
+
+    async deleteVideo(courseId, instructorId, videoId) {
+        try {
+            // Use the reusable validation method
+            await this._validateInstructorOwnership(courseId, instructorId);
+
+            // Edit section
+            const deletedVideo = await this.repository.markVideoDelete(videoId);
+            if (!deletedVideo) {
+                throw new InternalServerError("Failed to Delete Video.");
+            }
+
+            return ResponseHelper.success("Video is deleted successfully!");
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error in editing Section title:", error);
+                throw new InternalServerError("An error occurred while Deleting Video");
+            }
+        }
+    }
 
     async getCoursePreview(courseId) {
         try {
@@ -252,7 +348,7 @@ class CourseService {
             if (!coursePreview) {
                 throw new NotFoundError(`No Course Preview For Cousre With Id ${courseId}`);
             }
-        
+
 
             return ResponseHelper.success('Fetched the Cousre Preview', coursePreview);
         } catch (error) {
@@ -263,7 +359,10 @@ class CourseService {
                 throw new InternalServerError("An unexpected error occurred while adding the section.");
             }
         }
-    } 
+    }
+
+
+
 }
 
 

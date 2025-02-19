@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE "Course" (
     "id" TEXT NOT NULL,
+    "instructor_id" TEXT NOT NULL,
     "title" TEXT,
     "thumbnail_url" TEXT,
     "thumbnail_public_id" TEXT,
@@ -14,6 +15,7 @@ CREATE TABLE "Course" (
     "introduction_video_link" TEXT,
     "description" TEXT NOT NULL,
     "what_will_you_learn" TEXT,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -29,6 +31,7 @@ CREATE TABLE "CourseStatistics" (
     "total_reviews" INTEGER,
     "total_sections" INTEGER,
     "total_lectures" INTEGER,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -39,6 +42,7 @@ CREATE TABLE "CourseStatistics" (
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -50,6 +54,7 @@ CREATE TABLE "CourseCategory" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "category_id" TEXT NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -62,6 +67,7 @@ CREATE TABLE "Section" (
     "course_id" TEXT NOT NULL,
     "section_title" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -91,6 +97,8 @@ CREATE TABLE "Video" (
     "notification_type" TEXT,
     "original_filename" TEXT,
     "order" INTEGER,
+    "is_free" BOOLEAN NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -104,6 +112,7 @@ CREATE TABLE "Quiz" (
     "title" TEXT NOT NULL,
     "passing_score" INTEGER,
     "description" TEXT,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -118,6 +127,7 @@ CREATE TABLE "Question" (
     "type" TEXT NOT NULL,
     "options" TEXT,
     "correct_answers" TEXT,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -131,6 +141,7 @@ CREATE TABLE "Review" (
     "user_id" TEXT NOT NULL,
     "rating" DOUBLE PRECISION,
     "comment" TEXT,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -144,6 +155,7 @@ CREATE TABLE "FAQ" (
     "course_id" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -154,6 +166,7 @@ CREATE TABLE "FAQ" (
 CREATE TABLE "Tags" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -165,6 +178,7 @@ CREATE TABLE "CourseTags" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "tag_id" TEXT NOT NULL,
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -179,6 +193,7 @@ CREATE TABLE "UserProgressVideos" (
     "video_id" TEXT NOT NULL,
     "is_completed" BOOLEAN NOT NULL,
     "completed_at" TIMESTAMP(3),
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -192,6 +207,7 @@ CREATE TABLE "UserProgressCourse" (
     "course_id" TEXT NOT NULL,
     "is_completed" BOOLEAN NOT NULL,
     "completed_at" TIMESTAMP(3),
+    "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

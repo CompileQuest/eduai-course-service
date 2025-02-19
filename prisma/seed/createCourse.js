@@ -12,6 +12,13 @@ async function main() {
         process.exit(1);
     }
 
+    // Fetch an instructor (assuming you have an `Instructor` or `User` model)
+    const instructorId = "uuid_here_of_instructor_test"; // Change this if you have a separate `Instructor` model
+    if (!instructorId) {
+        console.error("No instructor found. Please create an instructor first.");
+        process.exit(1);
+    }
+
     // Define sample courses
     const courses = [
         {
@@ -45,6 +52,7 @@ async function main() {
     for (const courseData of courses) {
         const course = await prisma.course.create({
             data: {
+                instructorId: instructorId, // Added instructorId here
                 ...courseData,
                 categories: {
                     create: {
@@ -69,7 +77,7 @@ async function main() {
             console.log(`  Added Section: ${section.sectionTitle}`);
 
             // Create Videos
-            for (let j = 1; j <= 3; j++) {
+            for (let j = 1; j <= 8; j++) {
                 await prisma.video.create({
                     data: {
                         asset_id: uuidv4(),
@@ -79,12 +87,13 @@ async function main() {
                         title: `Lecture ${j} - Important Topic`,
                         format: "mp4",
                         width: 1920,
-                        order:j,
+                        order: j,
                         height: 1080,
                         duration: Math.floor(Math.random() * 600) + 300, // Random duration (5-15 min)
                         bitRate: 4500,
                         frameRate: 30,
                         folder: "course_videos",
+                        is_free: i % 2 == 0 ? true : false
                     },
                 });
                 console.log(`    Added Video ${j} to ${section.sectionTitle}`);

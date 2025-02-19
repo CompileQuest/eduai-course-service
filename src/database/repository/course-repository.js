@@ -27,41 +27,41 @@ class CourseRepository {
     }
 
     async FetchCourseTemplateById(courseId) {
-      
-            const course = await this.prisma.course.findUnique({
-                where: { id: courseId.trim() },
-                select: {
-                    title: true,
-                    thumbnailUrl: true,
-                    shortDescription: true,
-                    description: true,
-                    WhatWillYouLearn: true,
-                    requirements: true,
-                    difficultyLevel: true,
-                    price: true,
-                    categories: {
-                        select: {
-                            category: {
-                                select: {
-                                    id: true,
-                                    name: true
-                                }
-                            }, // Fetch the related Category through CourseCategory
-                        },
-                    },
-                    sections: {
-                        select: {
-                            id: true,
-                            sectionTitle: true,
-                            order: true,
-                        },
-                        orderBy: {
-                            order:'asc'
-                        }
+
+        const course = await this.prisma.course.findUnique({
+            where: { id: courseId.trim() },
+            select: {
+                title: true,
+                thumbnailUrl: true,
+                shortDescription: true,
+                description: true,
+                WhatWillYouLearn: true,
+                requirements: true,
+                difficultyLevel: true,
+                price: true,
+                categories: {
+                    select: {
+                        category: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }, // Fetch the related Category through CourseCategory
                     },
                 },
-            });
-            return course;
+                sections: {
+                    select: {
+                        id: true,
+                        sectionTitle: true,
+                        order: true,
+                    },
+                    orderBy: {
+                        order: 'asc'
+                    }
+                },
+            },
+        });
+        return course;
     }
 
 
@@ -264,48 +264,48 @@ class CourseRepository {
     }
 
     async SaveVideoToSection(payload) {
-            // Extract fields
-            const { sectionId, courseId, title } = payload.context.custom;
-            const {
-                asset_id,
-                request_id,
+        // Extract fields
+        const { sectionId, courseId, title } = payload.context.custom;
+        const {
+            asset_id,
+            request_id,
+            public_id, // Matches the Prisma schema
+            secure_url,
+            playback_url,
+            format,
+            width,
+            height,
+            duration,
+            folder,
+            notification_type,
+            original_filename,
+        } = payload;
+
+        // Create the video in the database
+        const video = await this.prisma.video.create({
+            data: {
+                asset_id, // Matches the Prisma schema
+                request_id, // Matches the Prisma schema
                 public_id, // Matches the Prisma schema
-                secure_url,
-                playback_url,
-                format,
-                width,
-                height,
-                duration,
-                folder,
-                notification_type,
-                original_filename,
-            } = payload;
+                secure_url, // Matches the Prisma schema
+                playback_url, // Matches the Prisma schema
+                sectionId, // Matches the Prisma schema
+                title, // Matches the Prisma schema
+                format, // Matches the Prisma schema 
+                width, // Matches the Prisma schema
+                height, // Matches the Prisma schema
+                duration, // Matches the Prisma schema  
+                folder, // Matches the Prisma schema
+                notification_type, // Matches the Prisma schema
+                original_filename, // Matches the Prisma schema  
+            },
+        });
 
-            // Create the video in the database
-            const video = await this.prisma.video.create({
-                data: {
-                    asset_id, // Matches the Prisma schema
-                    request_id, // Matches the Prisma schema
-                    public_id, // Matches the Prisma schema
-                    secure_url, // Matches the Prisma schema
-                    playback_url, // Matches the Prisma schema
-                    sectionId, // Matches the Prisma schema
-                    title, // Matches the Prisma schema
-                    format, // Matches the Prisma schema 
-                    width, // Matches the Prisma schema
-                    height, // Matches the Prisma schema
-                    duration, // Matches the Prisma schema  
-                    folder, // Matches the Prisma schema
-                    notification_type, // Matches the Prisma schema
-                    original_filename, // Matches the Prisma schema  
-                },
-            });
+        console.log("Video saved successfully:", video); // Success message
 
-            console.log("Video saved successfully:", video); // Success message
+        return video;
 
-            return video; 
-
-    } 
+    }
 
 
     async getCoursePreview(courseId) {
@@ -322,14 +322,14 @@ class CourseRepository {
                                 id: true,
                                 title: true,
                                 duration: true,
-                                order:true
+                                order: true
                             },
                             orderBy: {
                                 order: "asc" // here i am sorting the video 
                             }
                         }
                     }, orderBy: {
-                        order:"asc"
+                        order: "asc"
                     }
                 },
                 reviews: true,
@@ -340,11 +340,11 @@ class CourseRepository {
                 userProgressCousre: true, // Assuming the course progress is also needed
             },
         });
- 
-        return course; 
-    }  
 
-  
+        return course;
+    }
+
+
 
 
     // In your repository class o r file
@@ -356,7 +356,7 @@ class CourseRepository {
         });
     }
 
-    
+
     async updateVideoOrder(videoId, newOrder) {
         // Update the video order in the database
         return prisma.video.update({
@@ -414,6 +414,48 @@ class CourseRepository {
         });
     }
 
+
+
+    async checkOwnershipOfCourse(courseId, instructorId) {
+        return await this.prisma.course.findFirst({
+            where: {
+                id: courseId,
+                instructorId: instructorId
+            }
+        });
+    }
+
+    async markSectionAsDelete(sectionId) {
+        return await this.prisma.section.update({
+            where: { id: sectionId },
+            data: { deletedAt: new Date() }
+        });
+    }
+
+
+    async editSection(sectionId, title) {
+        return this.prisma.section.update({
+            where: { id: sectionId },
+            data: {
+                sectionTitle: title
+            }
+        });
+    }
+
+    async getSectionVideosIds(sectionId) {
+        const videos = await this.prisma.video.findMany({
+            where: { sectionId: sectionId },
+            select: { id: true }
+        });
+        return videos.map(video => video.id);
+    }
+
+    async markVideoDelete(videoId) {
+        return await this.prisma.video.update({
+            where: { id: videoId },
+            data: { deletedAt: new Date() }
+        });
+    }
 
 }
 
