@@ -340,6 +340,35 @@ class CourseService {
         }
     }
 
+
+
+    async editVideo(courseId, instructorId, videoId, payload) {
+        try {
+            // Use the reusable validation method
+            await this._validateInstructorOwnership(courseId, instructorId);
+
+
+            // Edit section
+            const deletedVideo = await this.repository.editVideo(videoId, payload);
+            if (!deletedVideo) {
+                throw new InternalServerError("Failed to Delete Video.");
+            }
+
+            return ResponseHelper.success("Video is deleted successfully!");
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error in editing Section title:", error);
+                throw new InternalServerError("An error occurred while Deleting Video");
+            }
+        }
+    }
+
+
+
+
+
     async getCoursePreview(courseId) {
         try {
             // Get max order from sections of the course

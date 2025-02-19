@@ -123,11 +123,6 @@ router.get('/courses/draft-courses/:id', async (req, res, next) => {
 });
 
 
-
-
-
-
-
 router.get('/courses/:id/content', async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -266,6 +261,27 @@ router.delete('/:courseId/deleteVideo', async (req, res, next) => {
     }
 });
 
+
+
+router.put('/:courseId/editVideo', async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const { videoId, payload } = req.body;
+        const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
+
+        // Simple validation using your custom error handling
+        if (!courseId || !instructorId || !videoId || !payload) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+        // Call the service method to delete the section
+        const videoDeleted = await service.editVideo(courseId, instructorId, videoId, payload);
+        res.status(200).json(videoDeleted);
+    } catch (err) {
+        console.log("this is the error ", err);
+        next(err); // Passes error to centralized error handling middleware
+    }
+});
 
 module.exports = router;
 
