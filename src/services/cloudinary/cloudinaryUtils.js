@@ -38,13 +38,13 @@ class CloudinaryService {
     }
 
 
-    async generateSignedUploadUrlFile(courseId, sectionId, title, isFree) {
+    async generateSignedUploadUrlFile(courseId, sectionId, isFree) {
         try {
             const folderPath = `courses/${courseId}/files`;
             const timestamp = Math.round(new Date().getTime() / 1000);
 
             // Prepare the context string from title,courseid,sectoinid !!
-            const context = `title=${title}|courseId=${courseId}|sectionId=${sectionId}|isFree=${isFree}`;
+            const context = `isFree=${isFree}|courseId=${courseId}|sectionId=${sectionId}|isFree=${isFree}`;
 
             // Include context in the signature calculation
             const signature = cloudinary.utils.api_sign_request(

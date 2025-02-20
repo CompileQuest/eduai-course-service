@@ -32,18 +32,17 @@ router.get('/signed-upload-url-video', async (req, res, next) => {
 
 
 // Updated route to get Cloudinary signed URL using the service layer
-router.get('/:courseId/signed-upload-url-file', async (req, res, next) => {
-    const { courseId } = req.params;
-    const { sectionId, title, isFree } = req.body; // Extract title from req.query
+router.get('/signed-upload-url-file', async (req, res, next) => {
+    const { courseId, sectionId, isFree } = req.query; // Extract title from req.query
     const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
     try {
         // Simple validation using your custom error handling
-        if (!sectionId || !instructorId || !title || !isFree) {
+        if (!courseId || !sectionId || !instructorId || !isFree) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
         // move the cloudinary to course service and make it accessible from there and do check like owner ships and all !!
-        const result = await service.generateSignedUploadUrlFile(courseId, sectionId, title, isFree); // Pass title to the service method
+        const result = await service.generateSignedUploadUrlFile(courseId, sectionId, isFree); // Pass title to the service method
         res.status(200).json({ message: "Signed URL generated successfully", result });
     } catch (err) {
         next(err);
@@ -54,7 +53,7 @@ router.get('/:courseId/signed-upload-url-file', async (req, res, next) => {
 
 // Updated route to return a simple Hello World message
 router.post(
-    "/webhook/video-uploaded", // Use validation middleware 
+    "/webhook/uploades", // Use validation middleware
     async (req, res, next) => {
         try {
             const timestamp = req.headers["x-cld-timestamp"];
@@ -64,12 +63,13 @@ router.post(
             if (payload.resource_type === "video") {
                 console.log("Video uploaded:");
                 // Save to video database
-                await service.processVideoUploadFromCloudinaryNotification(timestamp, signature, payload);
+                //await service.processVideoUploadFromCloudinaryNotification(timestamp, signature, payload);
+                console.log("this is the paylaod ", payload);
             } else if (payload.resource_type === "raw") {
                 console.log("File uploaded:");
                 // Save to file database (PDFs, ZIPs, etc.)
-                await service.processFileUploadFromCloudinaryNotification(timestamp, signature, payload);
-
+                //  await service.processFileUploadFromCloudinaryNotification(timestamp, signature, payload);
+                console.log("this is the paylaod ", payload);
             }
             res.status(200).json({ message: "Webhook received successfully!" }); // Acknowledgment message
         } catch (err) {

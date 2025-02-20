@@ -243,6 +243,7 @@ class CourseRepository {
             where: { id: courseId },
             select: {
                 sections: {
+                    where: { deletedAt: null },
                     orderBy: { order: 'asc' },
                     select: {
                         id: true,
@@ -352,7 +353,10 @@ class CourseRepository {
     async getSectionsByCourse(courseId) {
         return prisma.section.findMany({
             where: { courseId: courseId },  // Filter sections by course ID
-            select: { id: true },  // Only select the section IDs
+            select: {
+                id: true,
+                deletedAt: null
+            },  // Only select the section IDs
         });
     }
 
