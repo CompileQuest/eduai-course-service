@@ -202,20 +202,22 @@ router.get('/:cousreId/preview', async (req, res, next) => {
 router.delete('/:courseId/deleteSection', async (req, res, next) => {
     try {
         const { courseId } = req.params;
-        const { sectionId } = req.body;
+        const { sectionId } = req.query; // Get sectionId from query parameters
         const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
 
-        // Simple validation using your custom error handling
+        console.log(courseId);
+        console.log(sectionId);
+        console.log("i am called here the deltee ");
+
         if (!courseId || !sectionId || !instructorId) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
-        // Call the service method to delete the section
         const deletedSection = await service.deleteSectionById(courseId, sectionId, instructorId);
         res.status(200).json(deletedSection);
     } catch (err) {
         console.log("this is the error ", err);
-        next(err); // Passes error to centralized error handling middleware
+        next(err);
     }
 });
 
