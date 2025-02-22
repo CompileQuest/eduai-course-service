@@ -154,6 +154,8 @@ class CourseService {
     async FetchCourseContentById(courseId) {
         try {
             const course = await this.repository.FetchCourseContentById(courseId);
+            //console.log(course);
+            console.dir(course, { depth: null, colors: true });
 
             if (!course) {
                 throw new NotFoundError(`no resource found for courseid ${courseId}`);
@@ -182,6 +184,7 @@ class CourseService {
         try {
             // 1. Verify if the sections belong to the course
             const validSections = await this.repository.getSectionsByCourse(courseId);
+            console.log("this is the validSection ", validSections);
             const sectionIds = validSections.map(section => section.id);
             console.dir(sections, { depth: null, colors: true });
 
@@ -215,6 +218,7 @@ class CourseService {
                 throw error;  // Rethrow the error for proper handling
             } else {
                 // For unknown errors, you can throw a general internal error
+                console.log(error);
                 throw new InternalServerError("An unexpected error occurred while updating the video sorting.");
             }
         }
@@ -349,9 +353,9 @@ class CourseService {
 
 
             // Edit section
-            const deletedVideo = await this.repository.editVideo(videoId, payload);
-            if (!deletedVideo) {
-                throw new InternalServerError("Failed to Delete Video.");
+            const editedVideo = await this.repository.editVideo(videoId, payload);
+            if (!editedVideo) {
+                throw new InternalServerError("Failed to edit Video.");
             }
 
             return ResponseHelper.success("Video is deleted successfully!");
@@ -359,8 +363,8 @@ class CourseService {
             if (error instanceof AppError) {
                 throw error;
             } else {
-                console.error("Unexpected error in editing Section title:", error);
-                throw new InternalServerError("An error occurred while Deleting Video");
+                console.error("Unexpected error in editing Video", error);
+                throw new InternalServerError("An error occurred while Editing Video");
             }
         }
     }

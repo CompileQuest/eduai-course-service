@@ -152,17 +152,15 @@ router.put('/courses/:id/sections/sorting', async (req, res, next) => {
 });
 
 
-router.put('/courses/:id/sections/videos/sorting', async (req, res, next) => {
+router.put('/courses/:courseId/sections/videos/sorting', async (req, res, next) => {
     try {
-        const { id } = req.params; // Get course ID from request parameters
+        const { courseId } = req.params; // Get course ID from request parameters
         const { sections } = req.body; // Get sections from request body
-        console.log("Updating sections sorting for course with id:", id);
-        console.log("i am called here ");
-        // Log the full structure of sections
-        // console.dir(sections, { depth: null, colors: true });
+        console.log("Updating sections sorting for course with id:", courseId);
+        console.dir(sections, { depth: null, colors: true });
 
         // Call the service method to update sections sorting (you need to implement this method in your CourseService)
-        const updatedSections = await service.UpdateVideoSorting(id, sections);
+        const updatedSections = await service.UpdateVideoSorting(courseId, sections);
         res.status(200).json(updatedSections);
     } catch (err) {
         next(err);
@@ -246,7 +244,7 @@ router.put('/:courseId/editSection', async (req, res, next) => {
 router.delete('/:courseId/deleteVideo', async (req, res, next) => {
     try {
         const { courseId } = req.params;
-        const { videoId } = req.body;
+        const { videoId } = req.query;
         const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
 
         // Simple validation using your custom error handling
@@ -268,16 +266,16 @@ router.delete('/:courseId/deleteVideo', async (req, res, next) => {
 router.put('/:courseId/editVideo', async (req, res, next) => {
     try {
         const { courseId } = req.params;
-        const { videoId, payload } = req.body;
+        const { videoId, title, isFree } = req.body;
         const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
 
         // Simple validation using your custom error handling
-        if (!courseId || !instructorId || !videoId || !payload) {
+        if (!courseId || !instructorId || !videoId || !title || !isFree) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
         // Call the service method to delete the section
-        const videoDeleted = await service.editVideo(courseId, instructorId, videoId, payload);
+        const videoDeleted = await service.editVideo(courseId, instructorId, videoId, { title, isFree });
         res.status(200).json(videoDeleted);
     } catch (err) {
         console.log("this is the error ", err);

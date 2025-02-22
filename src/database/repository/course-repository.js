@@ -250,6 +250,8 @@ class CourseRepository {
                         sectionTitle: true,
                         order: true,
                         videos: {
+                            where: { deletedAt: null },
+                            orderBy: { order: 'asc' },
                             select: {
                                 id: true,
                                 title: true,
@@ -311,14 +313,16 @@ class CourseRepository {
 
     async getCoursePreview(courseId) {
         const course = await prisma.course.findUnique({
-            where: { id: courseId },
+            where: { id: courseId, deletedAt: null },
             include: {
                 sections: {
+                    where: { deletedAt: null },
                     select: {
                         id: true,
                         sectionTitle: true,
                         order: true,
                         videos: {
+                            where: { deletedAt: null },
                             select: {
                                 id: true,
                                 title: true,
@@ -352,10 +356,9 @@ class CourseRepository {
 
     async getSectionsByCourse(courseId) {
         return prisma.section.findMany({
-            where: { courseId: courseId },  // Filter sections by course ID
+            where: { courseId: courseId, deletedAt: null },  // Filter sections by course ID
             select: {
                 id: true,
-                deletedAt: null
             },  // Only select the section IDs
         });
     }
@@ -442,6 +445,16 @@ class CourseRepository {
             where: { id: sectionId },
             data: {
                 sectionTitle: title
+            }
+        });
+    }
+
+    async editVideo(videoId, payload) {
+        return this.prisma.video.update({
+            where: { id: videoId },
+            data: {
+                title: payload.title,
+                is_free: payload.is_free
             }
         });
     }
