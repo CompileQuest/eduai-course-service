@@ -63,7 +63,7 @@ class RabbitMQClient {
             await this.initialize();
         }
         const message = new Message("test", "course-service", data);
-        return await this.producer.produceMessage(queueName, message);
+        return await this.producer.processMessage(queueName, message);
     }
 }
 
