@@ -2,7 +2,7 @@ const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Cli
 const prisma = new PrismaClient(); // Instantiate Prisma Client
 const upload = require('../../../middleware/upload');
 const { authMiddleware } = require('../../../middleware/auth.middleware');
-const CloudinaryService = require('../../../services/cloudinary/cloudinaryUtils');
+const CloudinaryService = require('../../../services/cloudinary/cloudinary-service');
 const validate = require('../../../middleware/validate');
 const { videoUploadedSchema } = require('../../../validation/cloudinaryValidation');
 const { APIError, InternalServerError, BadRequestError, ForbiddenError, AppError, NotFoundError } = require('../../../utils/app-error')
@@ -21,9 +21,9 @@ router.get('/testing', async (req, res, next) => {
 
 // Updated route to get Cloudinary signed URL using the service layer
 router.get('/signed-upload-url-video', async (req, res, next) => {
-    const { courseId, sectionId, title } = req.query; // Extract title from req.query
+    const { courseId, sectionId, title, isFree } = req.query; // Extract title from req.query
     try {
-        const result = await service.generateSignedUploadUrlVideo(courseId, sectionId, title); // Pass title to the service method
+        const result = await service.generateSignedUploadUrlVideo(courseId, sectionId, title, isFree); // Pass title to the service method
         res.status(200).json({ message: "Signed URL generated successfully", result });
     } catch (err) {
         next(err);

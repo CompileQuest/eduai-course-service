@@ -267,48 +267,119 @@ class CourseRepository {
     }
 
     async SaveVideoToSection(payload) {
-        // Extract fields
-        const { sectionId, courseId, title } = payload.context.custom;
-        const {
-            asset_id,
-            request_id,
-            public_id, // Matches the Prisma schema
-            secure_url,
-            playback_url,
-            format,
-            width,
-            height,
-            duration,
-            folder,
-            notification_type,
-            original_filename,
-        } = payload;
+        try {
+            // Extract fields safely from payload
+            const { sectionId, courseId, title, isFree } = payload.context.custom || {};
 
-        // Create the video in the database
-        const video = await this.prisma.video.create({
-            data: {
-                asset_id, // Matches the Prisma schema
-                request_id, // Matches the Prisma schema
-                public_id, // Matches the Prisma schema
-                secure_url, // Matches the Prisma schema
-                playback_url, // Matches the Prisma schema
-                sectionId, // Matches the Prisma schema
-                title, // Matches the Prisma schema
-                format, // Matches the Prisma schema 
-                width, // Matches the Prisma schema
-                height, // Matches the Prisma schema
-                duration, // Matches the Prisma schema  
-                folder, // Matches the Prisma schema
-                notification_type, // Matches the Prisma schema
-                original_filename, // Matches the Prisma schema  
-            },
-        });
+            // Convert `isFree` to a proper boolean
+            const is_free = typeof isFree === "boolean" ? isFree : isFree === "true";
 
-        console.log("Video saved successfully:", video); // Success message
+            const {
+                asset_id,
+                request_id,
+                public_id,
+                secure_url,
+                playback_url,
+                format,
+                width,
+                height,
+                duration,
+                folder,
+                notification_type,
+                original_filename,
+            } = payload;
 
-        return video;
+            // Validate required fields before database insertion
+            if (!sectionId || !courseId || !public_id || !secure_url) {
+                throw new Error("❌ Missing required video fields");
+            }
 
+            // Save video to database with correct field names
+            const video = await this.prisma.video.create({
+                data: {
+                    asset_id,
+                    request_id,
+                    public_id,
+                    secure_url,
+                    playback_url,
+                    sectionId,
+                    title,
+                    format,
+                    width,
+                    height,
+                    duration,
+                    folder,
+                    notification_type,
+                    original_filename,
+                    is_free, // Correct field name for database
+                },
+            });
+
+            console.log("✅ Video saved successfully:", video);
+            return video;
+        } catch (error) {
+            console.error("🔥 Error saving video:", error);
+            throw error;
+        }
     }
+
+
+    async SaveFileToSection(payload) {
+        try {
+            // Extract fields safely from payload
+            const { sectionId, isFree, courseId } = payload.context.custom || {};
+
+            // Convert `isFree` to a proper boolean
+            const is_free = typeof isFree === "boolean" ? isFree : isFree === "true";
+
+            const {
+                asset_id,
+                request_id,
+                public_id,
+                secure_url,
+                playback_url,
+                format,
+                bytes,
+                type,
+                etag,
+                placeholder,
+                folder,
+                original_filename,
+            } = payload;
+
+            // Validate required fields before database insertion
+            if (!sectionId || !public_id || !secure_url) {
+                throw new Error("❌ Missing required file fields");
+            }
+
+            // Save file to database with correct field names
+            const file = await this.prisma.file.create({
+                data: {
+                    asset_id,
+                    request_id,
+                    public_id,
+                    secure_url,
+                    playback_url,
+                    sectionId,
+                    format,
+                    bytes,
+                    type,
+                    etag,
+                    placeholder,
+                    folder,
+                    original_filename,
+                    is_free, // Correct field name for database
+                },
+            });
+
+            console.log("✅ File saved successfully:", file);
+            return file;
+        } catch (error) {
+            console.error("🔥 Error saving file:", error);
+            throw error;
+        }
+    }
+
 
 
     async getCoursePreview(courseId) {

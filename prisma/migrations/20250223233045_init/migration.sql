@@ -97,12 +97,39 @@ CREATE TABLE "Video" (
     "notification_type" TEXT,
     "original_filename" TEXT,
     "order" INTEGER,
-    "is_free" BOOLEAN NOT NULL,
+    "is_free" BOOLEAN,
     "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Video_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "File" (
+    "id" TEXT NOT NULL,
+    "asset_id" TEXT NOT NULL,
+    "request_id" TEXT,
+    "public_id" TEXT NOT NULL,
+    "secure_url" TEXT NOT NULL,
+    "playback_url" TEXT,
+    "section_id" TEXT NOT NULL,
+    "title" TEXT,
+    "format" TEXT,
+    "bytes" INTEGER,
+    "type" TEXT,
+    "etag" TEXT,
+    "placeholder" BOOLEAN,
+    "folder" TEXT,
+    "context" JSONB,
+    "original_filename" TEXT,
+    "order" INTEGER,
+    "is_free" BOOLEAN,
+    "deleted_at" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "File_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -224,6 +251,12 @@ CREATE UNIQUE INDEX "Video_asset_id_key" ON "Video"("asset_id");
 CREATE UNIQUE INDEX "Video_public_id_key" ON "Video"("public_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "File_asset_id_key" ON "File"("asset_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "File_public_id_key" ON "File"("public_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Tags_name_key" ON "Tags"("name");
 
 -- AddForeignKey
@@ -240,6 +273,9 @@ ALTER TABLE "Section" ADD CONSTRAINT "Section_course_id_fkey" FOREIGN KEY ("cour
 
 -- AddForeignKey
 ALTER TABLE "Video" ADD CONSTRAINT "Video_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "File" ADD CONSTRAINT "File_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Quiz" ADD CONSTRAINT "Quiz_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

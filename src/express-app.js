@@ -5,6 +5,7 @@ const { databaseConnection } = require('./database/connection');
 const apiRoutes = require('./api/routes/index')
 const errorHandler = require('./utils/error-handler');
 const ErrorHandler = require('./utils/error-handler');
+const RabbitMQClient = require('./infrastructure/messageQueue/fireAndForget/RabbitMQClient');
 module.exports = async (app) => {
   // Middleware
   app.use(express.json());

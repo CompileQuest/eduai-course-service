@@ -17,14 +17,14 @@ class RabbitMQClient {
         this.producerChannel = null;
         this.consumerChannel = null;
 
-        RabbitMQClient.instance = this;
-    }
+        // Automatically initialize the connection when the class is instantiated
+        this.initialize().then(() => {
+            console.log("RabbitMQ client initialized automatically.");
+        }).catch((error) => {
+            console.error("Failed to initialize RabbitMQ client:", error);
+        });
 
-    static getInstance() {
-        if (!RabbitMQClient.instance) {
-            RabbitMQClient.instance = new RabbitMQClient();
-        }
-        return RabbitMQClient.instance;
+        RabbitMQClient.instance = this;
     }
 
     async initialize() {
@@ -51,20 +51,22 @@ class RabbitMQClient {
             this.consumer.consumeMessages();
 
             this.isInitialized = true;
-            console.log("RabbitMQ client initialized.");
-
+            console.log("RabbitMQ client initialized successfully.");
         } catch (error) {
             console.error("RabbitMQ error:", error);
+            throw error; // Re-throw the error to handle it outside
         }
     }
 
     async produce(queueName, data) {
         if (!this.isInitialized) {
-            await this.initialize();
+            throw new Error("RabbitMQ client is not initialized.");
         }
         const message = new Message("test", "course-service", data);
-        return await this.producer.processMessage(queueName, message);
+        return await this.producer.produceMessage(queueName, message);
     }
 }
 
-module.exports = RabbitMQClient.getInstance();
+// Create and export a single instance of RabbitMQClient
+const rabbitMQClient = new RabbitMQClient();
+module.exports = rabbitMQClient;
