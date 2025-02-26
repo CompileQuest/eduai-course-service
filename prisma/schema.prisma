@@ -75,10 +75,10 @@ model Section {
   id                 String               @id @default(uuid())
   courseId           String               @map("course_id")
   sectionTitle       String               @map("section_title")
+  quizId             String               @map("quiz_id")
   order              Int
   videos             Video[] // One-to-many relation
   files              File[]
-  quizzes            Quiz[] // One-to-many relation
   course             Course               @relation(fields: [courseId], references: [id])
   userProgressVideos UserProgressVideos[] // Added relation to UserProgressVideos
   deletedAt          DateTime?            @map("deleted_at") // Soft delete field
@@ -140,34 +140,6 @@ model File {
   deletedAt         DateTime? @map("deleted_at") // Soft delete field
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
-}
-
-model Quiz {
-  id           String     @id @default(uuid())
-  sectionId    String     @map("section_id")
-  title        String
-  passingScore Int?       @map("passing_score")
-  description  String?
-  section      Section    @relation(fields: [sectionId], references: [id])
-  questions    Question[] // One-to-many relation
-  deletedAt    DateTime?  @map("deleted_at") // Soft delete field
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-}
-
-model Question {
-  id             String    @id @default(uuid())
-  quizId         String    @map("quiz_id")
-  text           String
-  type           String
-  options        String?
-  correctAnswers String?   @map("correct_answers")
-  quiz           Quiz      @relation(fields: [quizId], references: [id])
-  deletedAt      DateTime? @map("deleted_at") // Soft delete field
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 model Review {

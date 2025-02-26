@@ -66,6 +66,7 @@ CREATE TABLE "Section" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "section_title" TEXT NOT NULL,
+    "quiz_id" TEXT NOT NULL,
     "order" INTEGER NOT NULL,
     "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -130,35 +131,6 @@ CREATE TABLE "File" (
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "File_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Quiz" (
-    "id" TEXT NOT NULL,
-    "section_id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "passing_score" INTEGER,
-    "description" TEXT,
-    "deleted_at" TIMESTAMP(3),
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Quiz_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Question" (
-    "id" TEXT NOT NULL,
-    "quiz_id" TEXT NOT NULL,
-    "text" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
-    "options" TEXT,
-    "correct_answers" TEXT,
-    "deleted_at" TIMESTAMP(3),
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -276,12 +248,6 @@ ALTER TABLE "Video" ADD CONSTRAINT "Video_section_id_fkey" FOREIGN KEY ("section
 
 -- AddForeignKey
 ALTER TABLE "File" ADD CONSTRAINT "File_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Quiz" ADD CONSTRAINT "Quiz_section_id_fkey" FOREIGN KEY ("section_id") REFERENCES "Section"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Question" ADD CONSTRAINT "Question_quiz_id_fkey" FOREIGN KEY ("quiz_id") REFERENCES "Quiz"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "Course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

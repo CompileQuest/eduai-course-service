@@ -49,6 +49,30 @@ async function main() {
         },
     ];
 
+    // Define sample FAQs
+    const faqs = [
+        {
+            question: "What is the course duration?",
+            answer: "The course duration is approximately 20 hours.",
+        },
+        {
+            question: "Do I need prior experience?",
+            answer: "Basic knowledge of JavaScript is recommended.",
+        },
+        {
+            question: "Will I get a certificate?",
+            answer: "Yes, you will receive a certificate upon completion.",
+        },
+        {
+            question: "Can I access the course offline?",
+            answer: "No, the course is only available online.",
+        },
+        {
+            question: "Is there a money-back guarantee?",
+            answer: "Yes, we offer a 30-day money-back guarantee.",
+        },
+    ];
+
     for (const courseData of courses) {
         const course = await prisma.course.create({
             data: {
@@ -72,6 +96,8 @@ async function main() {
                     courseId: course.id,
                     sectionTitle: `Section ${i} - Key Concepts`,
                     order: i,
+                    quizId: `quiz_${uuidv4()}`
+                    // quizId is optional, so you don't need to provide it
                 },
             });
             console.log(`  Added Section: ${section.sectionTitle}`);
@@ -93,11 +119,43 @@ async function main() {
                         bitRate: 4500,
                         frameRate: 30,
                         folder: "course_videos",
-                        is_free: i % 2 == 0 ? true : false
+                        is_free: i % 2 == 0 ? true : false,
                     },
                 });
                 console.log(`    Added Video ${j} to ${section.sectionTitle}`);
             }
+
+            // Create Files
+            for (let k = 1; k <= 3; k++) {
+                await prisma.file.create({
+                    data: {
+                        asset_id: uuidv4(),
+                        public_id: `file_${uuidv4()}`,
+                        secure_url: `https://somefile.com/file${k}`,
+                        sectionId: section.id,
+                        title: `Resource ${k} - Supplementary Material`,
+                        format: "pdf",
+                        bytes: 1024 * 1024, // 1 MB
+                        type: "document",
+                        folder: "course_files",
+                        is_free: i % 2 == 0 ? true : false,
+                    },
+                });
+                console.log(`    Added File ${k} to ${section.sectionTitle}`);
+            }
+        }
+
+        // Create FAQs for the course
+        for (const faq of faqs) {
+            await prisma.fAQ.create({
+                data: {
+                    userId: instructorId, // Assuming the instructor is the one adding FAQs
+                    courseId: course.id,
+                    question: faq.question,
+                    answer: faq.answer,
+                },
+            });
+            console.log(`  Added FAQ: ${faq.question}`);
         }
     }
 

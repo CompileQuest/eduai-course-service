@@ -38,6 +38,16 @@ class QuizRepository {
                         order: true,
                     },
                 },
+                faqs: {
+                    select: {
+                        id: true,
+                        courseId: true,
+                        question: true,
+                        answer: true,
+                        createdAt: true,
+                        updatedAt: true
+                    }
+                }
             },
         });
         return course; // No "not found" check here
