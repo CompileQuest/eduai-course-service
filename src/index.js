@@ -1,10 +1,10 @@
 const express = require('express');
 const expressApp = require('./express-app');
-const { PORT , TUNNEL_DOMAIN } = require('./config');
+const { PORT, TUNNEL_DOMAIN } = require('./config');
 const { killPort, startTunnel } = require('./utils/systemUtils');
 const StartServer = async () => {
-    await killPort(PORT); 
-    const app = express(); 
+    //await killPort(PORT); 
+    const app = express();
 
     await expressApp(app);
 
@@ -14,7 +14,7 @@ const StartServer = async () => {
         console.log(`Course Service is running on port ${PORT}`);
 
         // Start the tunnel after the server is running
-        startTunnel(PORT, TUNNEL_DOMAIN);
+        //  startTunnel(PORT, TUNNEL_DOMAIN);
     });
 
     server.on('error', (err) => {

@@ -19,35 +19,59 @@ async function main() {
         process.exit(1);
     }
 
-    // Define sample courses
-    const courses = [
-        {
-            title: "Full-Stack Web Development with Next.js and Express",
-            shortDescription: "Learn how to build scalable web applications.",
-            difficultyLevel: "Intermediate",
-            price: 49.99,
-            discountedPrice: 39.99,
-            requirements: "Basic JavaScript knowledge",
-            duration: 20,
+    // Helper function to generate random course data
+    const generateCourseData = (index) => {
+        const courseTitles = [
+            "Full-Stack Web Development with Next.js and Express",
+            "Mastering Cloud Computing with AWS",
+            "Data Science with Python and Machine Learning",
+            "Mobile App Development with Flutter",
+            "Cybersecurity Fundamentals",
+            "Advanced JavaScript and React",
+            "DevOps with Docker and Kubernetes",
+            "Blockchain Development with Solidity",
+            "UI/UX Design with Figma",
+            "Artificial Intelligence and Deep Learning",
+            "Game Development with Unity",
+            "Python for Data Analysis",
+            "iOS Development with Swift",
+            "Android Development with Kotlin",
+            "Frontend Development with Vue.js",
+            "Backend Development with Node.js",
+            "Database Design with SQL",
+            "Cloud Native Applications with Azure",
+            "Ethical Hacking and Penetration Testing",
+            "Full-Stack Development with Django",
+            "Advanced CSS and Animations",
+            "RESTful API Design",
+            "GraphQL for Modern Applications",
+            "Serverless Architecture with AWS Lambda",
+            "Microservices with Spring Boot",
+            "Big Data with Hadoop and Spark",
+            "Natural Language Processing with Python",
+            "AR/VR Development with Unity",
+            "Quantum Computing Basics",
+            "Advanced Algorithms and Data Structures",
+        ];
+
+        const difficulties = ["Beginner", "Intermediate", "Advanced"];
+        const prices = [29.99, 49.99, 69.99, 99.99];
+        const durations = [10, 20, 30, 40];
+
+        return {
+            title: courseTitles[index % courseTitles.length],
+            shortDescription: `Learn how to build ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
+            difficultyLevel: difficulties[Math.floor(Math.random() * difficulties.length)],
+            price: prices[Math.floor(Math.random() * prices.length)],
+            discountedPrice: prices[Math.floor(Math.random() * prices.length)] - 10,
+            requirements: "Basic programming knowledge",
+            duration: durations[Math.floor(Math.random() * durations.length)],
             status: "draft",
-            introductionVideoLink: "https://somevideo.com/intro1",
-            description: "A complete guide to modern full-stack development.",
-            WhatWillYouLearn: "How to build modern web applications.",
-        },
-        {
-            title: "Mastering Cloud Computing with AWS",
-            shortDescription: "Learn to deploy scalable cloud applications.",
-            difficultyLevel: "Advanced",
-            price: 69.99,
-            discountedPrice: 59.99,
-            requirements: "Basic networking knowledge",
-            duration: 30,
-            status: "draft",
-            introductionVideoLink: "https://somevideo.com/intro2",
-            description: "Deep dive into AWS cloud services.",
-            WhatWillYouLearn: "Deploying, managing, and securing cloud apps.",
-        },
-    ];
+            introductionVideoLink: `https://somevideo.com/intro${index + 1}`,
+            description: `A complete guide to ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
+            WhatWillYouLearn: `How to build ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
+        };
+    };
 
     // Define sample FAQs
     const faqs = [
@@ -57,7 +81,7 @@ async function main() {
         },
         {
             question: "Do I need prior experience?",
-            answer: "Basic knowledge of JavaScript is recommended.",
+            answer: "Basic knowledge of programming is recommended.",
         },
         {
             question: "Will I get a certificate?",
@@ -73,7 +97,9 @@ async function main() {
         },
     ];
 
-    for (const courseData of courses) {
+    // Create 30 courses
+    for (let i = 0; i < 30; i++) {
+        const courseData = generateCourseData(i);
         const course = await prisma.course.create({
             data: {
                 instructorId: instructorId, // Added instructorId here
@@ -87,61 +113,60 @@ async function main() {
                 },
             },
         });
-        console.log(`Created Course: ${course.title}`);
+        console.log(`Created Course ${i + 1}: ${course.title}`);
 
         // Create Sections
-        for (let i = 1; i <= 3; i++) {
+        for (let j = 1; j <= 3; j++) {
             const section = await prisma.section.create({
                 data: {
                     courseId: course.id,
-                    sectionTitle: `Section ${i} - Key Concepts`,
-                    order: i,
-                    quizId: `quiz_${uuidv4()}`
-                    // quizId is optional, so you don't need to provide it
+                    sectionTitle: `Section ${j} - Key Concepts`,
+                    order: j,
+                    quizId: `quiz_${uuidv4()}`,
                 },
             });
             console.log(`  Added Section: ${section.sectionTitle}`);
 
             // Create Videos
-            for (let j = 1; j <= 8; j++) {
+            for (let k = 1; k <= 8; k++) {
                 await prisma.video.create({
                     data: {
                         asset_id: uuidv4(),
                         public_id: `video_${uuidv4()}`,
-                        secure_url: `https://somevideo.com/video${j}`,
+                        secure_url: `https://somevideo.com/video${k}`,
                         sectionId: section.id,
-                        title: `Lecture ${j} - Important Topic`,
+                        title: `Lecture ${k} - Important Topic`,
                         format: "mp4",
                         width: 1920,
-                        order: j,
+                        order: k,
                         height: 1080,
                         duration: Math.floor(Math.random() * 600) + 300, // Random duration (5-15 min)
                         bitRate: 4500,
                         frameRate: 30,
                         folder: "course_videos",
-                        is_free: i % 2 == 0 ? true : false,
+                        is_free: j % 2 == 0 ? true : false,
                     },
                 });
-                console.log(`    Added Video ${j} to ${section.sectionTitle}`);
+                console.log(`    Added Video ${k} to ${section.sectionTitle}`);
             }
 
             // Create Files
-            for (let k = 1; k <= 3; k++) {
+            for (let l = 1; l <= 3; l++) {
                 await prisma.file.create({
                     data: {
                         asset_id: uuidv4(),
                         public_id: `file_${uuidv4()}`,
-                        secure_url: `https://somefile.com/file${k}`,
+                        secure_url: `https://somefile.com/file${l}`,
                         sectionId: section.id,
-                        title: `Resource ${k} - Supplementary Material`,
+                        title: `Resource ${l} - Supplementary Material`,
                         format: "pdf",
                         bytes: 1024 * 1024, // 1 MB
                         type: "document",
                         folder: "course_files",
-                        is_free: i % 2 == 0 ? true : false,
+                        is_free: j % 2 == 0 ? true : false,
                     },
                 });
-                console.log(`    Added File ${k} to ${section.sectionTitle}`);
+                console.log(`    Added File ${l} to ${section.sectionTitle}`);
             }
         }
 
