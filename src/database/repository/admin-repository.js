@@ -29,6 +29,33 @@ class AdminRepository {
         return { courses, total };
     }
 
+
+    async getCoursesFiltered({
+        searchByTitle, title,
+        page = 1, limit = 10
+    }) {
+        const skip = (page - 1) * limit;
+
+        // Dynamically construct the filter conditions
+        const whereCondition = {
+            ...(searchByTitle && title && { title: { contains: title, mode: "insensitive" } }),
+        };
+
+        // Fetch courses & total count in parallel
+        const [courses, total] = await Promise.all([
+            this.prisma.course.findMany({
+                where: whereCondition,
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+            }),
+            this.prisma.course.count({ where: whereCondition }),
+        ]);
+
+        return { courses, total };
+    }
+
+
 }
 
 module.exports = AdminRepository; 
