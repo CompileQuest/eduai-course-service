@@ -1,57 +1,47 @@
-const { createLogger, transports } = require('winston');
-const { AppError , STATUS_CODES } = require('./app-error.js');
+const { createLogger, transports, format } = require('winston');
+const chalk = require('chalk'); // Add this package for colorized output
+const { AppError, STATUS_CODES } = require('./app-error.js');
 
-
+// Winston Logger Setup
 const LogErrors = createLogger({
+    format: format.combine(
+        format.timestamp(),
+        format.errors({ stack: true }),
+        format.json()
+    ),
     transports: [
         new transports.Console(),
         new transports.File({ filename: 'app_error.log' })
     ]
 });
 
-
 class ErrorLogger {
-    constructor() { }
-
     async logError(err) {
-        // Capture the current date and time for the log entry
         const timestamp = new Date().toISOString();
 
-        console.log('==================== Start Error Logger ===============');
-        console.log(`Error Type: ${err.name}`); // Log the type of the error (e.g., TypeError)
-        console.log('\n')
-        console.log(`=====Error Message Start Here=====`); // Log the message associated with the error
-        console.log('\n')
-        console.log(`Error Message: ${err.message}`); // Log the message associated with the error
-        console.log('\n')
-        console.log(`=====Error Message ends Here======`); // Log the message associated with the error
-        console.log('\n')
-        console.log(`===========Error stack Starts here =========`)
-        console.log('\n')
-        console.log(`Error Stack: ${err.stack}`); // Log the stack trace for more details
-        console.log('\n')
-        console.log(`===========Error stack Ends here =========`)
-        console.log('\n')
+        console.log(chalk.red.bold('\n========= ERROR LOG ========='));
+        console.log(chalk.yellow(`🔥 [${timestamp}]`));
+        console.log(chalk.red.bold('Error Type:'), chalk.white(err.name || 'Unknown Error'));
+        console.log(chalk.red.bold('Message:'), chalk.white(err.message || 'No message provided'));
 
+        if (err.stack) {
+            console.log(chalk.blue.bold('\nStack Trace:'));
+            console.log(chalk.white(err.stack));
+        }
+        console.log(chalk.red.bold('=============================\n'));
 
-        console.log('==================== End Error Logger ===============');
-
-        // This is a winston loger can use it or get rid of it for now i prefer mine the custome format i in the above code
-        LogErrors.log({
-            private: true,
+        // Log error in file
+        LogErrors.error({
             level: 'error',
-            message: `${timestamp} - Error Type: ${err.name}, Message: ${err.message}, Stack: ${err.stack}`
+            timestamp,
+            name: err.name,
+            message: err.message,
+            stack: err.stack
         });
-
-        return false;
     }
 
     isTrustError(error) {
-        if (error instanceof AppError) {
-            return error.isOperational;
-        } else {
-            return false;
-        }
+        return error instanceof AppError ? error.isOperational : false;
     }
 }
 
@@ -61,35 +51,30 @@ const ErrorHandler = async (err, req, res, next) => {
     // Log the error
     await errorLogger.logError(err);
 
-    // Determine the response data
-    const statusCode = err.statusCode || STATUS_CODES.INTERNAL_ERROR; // Default to 500 if statusCode is missing
+    // Determine response
+    const statusCode = err.statusCode || STATUS_CODES.INTERNAL_ERROR;
     const response = {
         success: false,
-        statusCode: statusCode,
-        error: err.name || 'API Error', // Error name (e.g., "BadRequestError", "ValidationError")
-        message: err.message || 'Internal Server Error', // Error message
-        description: err.description || 'No description provided', // Error description
+        statusCode,
+        error: err.name || 'Server Error',
+        message: err.message || 'Something went wrong',
     };
 
-    // If the error has additional details (e.g., errorStack), include them in the response
-    if (err.errorStack) {
-        response.stack = err.errorStack; // Include the error stack trace
+    if (err.description) {
+        response.description = err.description;
     }
 
-    // Check if the error is trusted (operational)
     if (errorLogger.isTrustError(err)) {
         return res.status(statusCode).json(response);
     }
 
-    // If the error is not trusted, log it and respond with a generic error message
-    console.error('🔥 Critical Error:', err);
+    // For unknown errors, hide details from the client
     return res.status(500).json({
         success: false,
         statusCode: 500,
         error: 'Internal Server Error',
-        message: 'Something went wrong!',
-        description: 'An unexpected error occurred. Please try again later.',
+        message: 'An unexpected error occurred. Please try again later.',
     });
 };
 
-module.exports = ErrorHandler;
+module.exports = ErrorHandler; 

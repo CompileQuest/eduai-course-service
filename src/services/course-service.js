@@ -8,13 +8,6 @@ class CourseService {
         this.repository = new CourseRepository();
     }
 
-    async AddCourse(courseDetails) {
-        return await this.repository.AddCourse(courseDetails);
-    }
-
-    async FetchAllCourses() {
-        return await this.repository.FetchAllCourses();
-    }
 
     async FetchCourseTemplateById(courseId) {
         return await this.repository.FetchCourseTemplateById(courseId);
@@ -137,6 +130,29 @@ class CourseService {
                 error.statusCode || 500,
                 error.message
             );
+        }
+    }
+
+
+
+    async FetchCoursesPaginated(instructorId, page, limit) {
+        try {
+
+            const InstructorCourses = await this.repository.FetchInstructorCoursesPaginated(instructorId, page, limit);
+
+            if (InstructorCourses.length === 0) {
+                return ResponseHelper.success("You don't have yet any courses !! Create one ");
+            }
+
+
+            return ResponseHelper.success("Fetch your courses successfuly ", InstructorCourses);
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error while fetching instructor courses", error);
+                throw new InternalServerError("An error occurred while fetchign instructor courses !!");
+            }
         }
     }
 

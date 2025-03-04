@@ -189,6 +189,31 @@ class CourseRepository {
         }
     }
 
+    async FetchInstructorCoursesPaginated(instructorId, page, limit) {
+        // Ensure page and limit are numbers
+        page = parseInt(page, 10) || 1;
+        limit = parseInt(limit, 10) || 10;
+
+        const skip = (page - 1) * limit;
+
+        // Define the where condition for filtering courses
+        const where = { instructorId: instructorId };
+
+        // Fetch courses and total count in parallel
+        const [courses, total] = await Promise.all([
+            this.prisma.course.findMany({
+                where,  // Apply filter
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' } // Sort by latest
+            }),
+            this.prisma.course.count({ where }) // Count total courses
+        ]);
+
+        return { courses, total };
+    }
+
+
     async DeleteCourseTemplate(courseId) {
         try {
             return await this.prisma.$transaction(async (prisma) => {
@@ -219,9 +244,6 @@ class CourseRepository {
     async FetchCourseTemplate() {
         try {
             return await this.prisma.course.findMany({
-                where: {
-                    status: 'draft'
-                },
                 select: {
                     id: true,
                     title: true,

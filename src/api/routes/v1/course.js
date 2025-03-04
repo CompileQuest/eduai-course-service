@@ -89,10 +89,17 @@ router.put('/courses/:courseId/thumbnail-upload', authMiddleware,
     });
 
 
-router.get('/courses/draft-courses', async (req, res, next) => {
+router.get('/instructor-courses', async (req, res, next) => {
     try {
-        const courseTemplate = await service.FetchCourseTemplate();
-        res.status(200).json(courseTemplate);
+        const page = parseInt(req.query.page, 10);
+        const limit = parseInt(req.query.limit, 10);
+        const instructorId = 'uuid_here_of_instructor_test';
+        if (isNaN(page) || isNaN(limit)) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+        const courses = await service.FetchCoursesPaginated(instructorId, page, limit);
+        res.status(200).json(courses);
     } catch (err) {
         next(err);
     }
