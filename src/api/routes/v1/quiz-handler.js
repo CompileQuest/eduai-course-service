@@ -1,6 +1,5 @@
 const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
 const prisma = new PrismaClient(); // Instantiate Prisma Client
-const { authMiddleware } = require('../../../middleware/auth.middleware');
 const QuizService = require('../../../services/quiz-service');
 const { BadRequestError } = require('../../../utils/app-error'); // Change this import
 const express = require('express');

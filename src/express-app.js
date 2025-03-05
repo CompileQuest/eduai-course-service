@@ -6,9 +6,11 @@ const apiRoutes = require('./api/routes/index')
 const errorHandler = require('./utils/error-handler');
 const ErrorHandler = require('./utils/error-handler');
 const RabbitMQClient = require('./infrastructure/messageQueue/fireAndForget/RabbitMQClient');
+const cookieParser = require('cookie-parser');
 module.exports = async (app) => {
   // Middleware
   app.use(express.json());
+  app.use(cookieParser());
   app.use(cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)

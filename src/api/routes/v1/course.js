@@ -1,13 +1,14 @@
 const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
 const prisma = new PrismaClient(); // Instantiate Prisma Client
 const upload = require('../../../middleware/upload');
-const { authMiddleware } = require('../../../middleware/auth.middleware');
+const { checkAuth } = require('../../../middleware/auth/checkAuth');
 const CourseService = require('../../../services/course-service');
+const tokenManipulator = require("../../../middleware/tokenManipulator")
 const { BadRequestError } = require('../../../utils/app-error'); // Change this import
 const express = require('express');
 const { ServerDescriptionChangedEvent } = require('mongodb');
-
-
+const { checkRole, getUserId } = require('../../../middleware/auth/authHelper');
+const roles = require('../../../config/roles')
 const service = new CourseService();
 const router = express.Router();
 
@@ -49,7 +50,7 @@ router.get('/categories', async (req, res, next) => {
 
 
 router.post('/courses/create-course-template',
-    authMiddleware,
+    checkAuth,
     upload.single('thumbnail'),
     async (req, res, next) => {
         try {
@@ -73,7 +74,7 @@ router.post('/courses/create-course-template',
 
 
 
-router.put('/courses/:courseId/thumbnail-upload', authMiddleware,
+router.put('/courses/:courseId/thumbnail-upload', checkAuth,
     upload.single('thumbnail'), async (req, res, next) => {
         try {
             const { courseId } = req.params;
@@ -89,8 +90,10 @@ router.put('/courses/:courseId/thumbnail-upload', authMiddleware,
     });
 
 
-router.get('/instructor-courses', async (req, res, next) => {
+router.get('/instructor-courses', checkAuth, checkRole([roles.ADMIN, roles.INSTRUCTOR]), async (req, res, next) => {
     try {
+        const tempUserId = getUserId(req.auth);
+        console.log("the user id is ", tempUserId);
         const page = parseInt(req.query.page, 10);
         const limit = parseInt(req.query.limit, 10);
         const instructorId = 'uuid_here_of_instructor_test';
