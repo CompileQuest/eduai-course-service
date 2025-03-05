@@ -14,6 +14,24 @@ router.get('/', (req, res) => {
     res.send('Hello World quiz handler  service is responding ');
 });
 
+
+router.get('/:courseId/:sectionid/file', async (req, res, next) => {
+    try {
+        const { courseId, sectionid } = req.params;
+
+        if (!courseId || !sectionid) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+        const file = await service.getFileBySectionId(courseId, sectionid);
+        res.status(200).json(file);
+    } catch (err) {
+        console.log("this is the error ", err);
+        next(err);
+    }
+});
+
+
 router.get('/:courseId/general-content', async (req, res, next) => {
     try {
         const { courseId } = req.params;

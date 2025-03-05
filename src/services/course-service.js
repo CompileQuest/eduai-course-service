@@ -156,6 +156,44 @@ class CourseService {
         }
     }
 
+    async getSectionTemp(courseId) {
+        try {
+            const sections = await this.repository.getSectionTemp(courseId);
+
+            if (sections.length === 0) {
+                return ResponseHelper.success("No sections found", []);
+            }
+
+            const sectionsWithQuizzes = sections.map((section, index) => ({
+                ...section,
+                quiz: index % 2 === 0 ? { // Assign quiz data to some sections, leave others null
+                    difficulty: 'medium',
+                    courseid: courseId,
+                    sectionid: section.id,
+                    quizTime: 8, // in minutes
+                    passingScore: 80, // percentage
+                    numberOfQuestions: 15,
+                    typeOfQuestion: {
+                        mcq: true,
+                        trueOrFalse: false,
+                        criticalThinking: true,
+                        generalKnowledge: false,
+                        problemSolving: true,
+                        practicalSkills: false,
+                    }
+                } : null
+            }));
+
+            return ResponseHelper.success("Fetch your sections successfully", sectionsWithQuizzes);
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error while fetching sections", error);
+                throw new InternalServerError("An error occurred while fetching sections!!");
+            }
+        }
+    }
 
 
     async FetchCourseTemplate() {

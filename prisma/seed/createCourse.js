@@ -58,6 +58,28 @@ async function main() {
         const prices = [29.99, 49.99, 69.99, 99.99];
         const durations = [10, 20, 30, 40];
 
+        // List of possible statuses
+        const statuses = [
+            "Draft",
+            "Pending",
+            "Approved",
+            "Published",
+            "Rejected",
+            "Archived",
+            "Suspended",
+            "Under Review",
+            "Expired",
+            "Unpublished",
+        ];
+
+        // List of thumbnail URLs
+        const thumbnailUrls = [
+            "https://res.cloudinary.com/dzexoe2b8/image/upload/f_auto,q_auto/xj3nn8wp4eftpe05ganf",
+            "https://res.cloudinary.com/dzexoe2b8/image/upload/f_auto,q_auto/zgjeib74l0w7mtyi2n8s",
+            "https://res.cloudinary.com/dzexoe2b8/image/upload/f_auto,q_auto/gfo1mqxk9qo7kktmvoqv",
+            "https://res.cloudinary.com/dzexoe2b8/image/upload/f_auto,q_auto/fdptwn3m1w3s9pufz8wx",
+        ];
+
         return {
             title: courseTitles[index % courseTitles.length],
             shortDescription: `Learn how to build ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
@@ -66,10 +88,11 @@ async function main() {
             discountedPrice: prices[Math.floor(Math.random() * prices.length)] - 10,
             requirements: "Basic programming knowledge",
             duration: durations[Math.floor(Math.random() * durations.length)],
-            status: "draft",
+            status: statuses[Math.floor(Math.random() * statuses.length)], // Random status
             introductionVideoLink: `https://somevideo.com/intro${index + 1}`,
             description: `A complete guide to ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
             WhatWillYouLearn: `How to build ${courseTitles[index % courseTitles.length].toLowerCase()}.`,
+            thumbnailUrl: thumbnailUrls[Math.floor(Math.random() * thumbnailUrls.length)], // Random thumbnail URL
         };
     };
 

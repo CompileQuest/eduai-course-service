@@ -66,7 +66,7 @@ CREATE TABLE "Section" (
     "id" TEXT NOT NULL,
     "course_id" TEXT NOT NULL,
     "section_title" TEXT NOT NULL,
-    "quiz_id" TEXT NOT NULL,
+    "quiz_id" TEXT,
     "order" INTEGER NOT NULL,
     "deleted_at" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

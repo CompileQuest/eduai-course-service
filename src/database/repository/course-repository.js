@@ -509,8 +509,24 @@ class CourseRepository {
             data: {
                 sectionTitle: title,
                 order: newOrder,
-                courseId,
+                course: {
+                    connect: { id: courseId } // Connect to an existing course
+                },
+                quizId: null
             },
+        });
+    }
+
+    async getSectionTemp(courseId) {
+        return prisma.section.findMany({
+            where: {
+                courseId: courseId,
+                deletedAt: null // Exclude soft-deleted sections
+            },
+            select: {
+                id: true,
+                sectionTitle: true // Use `sectionTitle` based on your Prisma schema
+            }
         });
     }
 
