@@ -20,11 +20,10 @@ async function simulateCourseService() {
     const courseCreatedMessage = new Message(RoutingKeys.COURSE_CREATED, "course_service", courseCreatedPayload);
     const courseEnrolledMessage = new Message(RoutingKeys.COURSE_CREATED, "course_service", courseEnrolledPayload);
 
-    for (let i = 0; i < 10; i) {
-        await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, courseCreatedMessage);
-        await rabbitMQClient.produce(RoutingKeys.COURSE_ENROLLED, courseEnrolledMessage);
+    await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, courseCreatedMessage);
+    await rabbitMQClient.produce(RoutingKeys.COURSE_ENROLLED, courseEnrolledMessage);
 
-    }
+
     console.log("Course Service: Published COURSE_CREATED event.");
 }
 
