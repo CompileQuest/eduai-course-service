@@ -3,15 +3,15 @@ class Producer {
         this.channel = channel;
     }
 
-    async produceMessage(queue, payload) {
+    async produceMessage(exchange, routingKey, payload) {
         try {
-            // Ensure the queue exists before publishing
-            await this.channel.assertQueue(queue, { durable: true });
+            // Ensure the exchange exists before publishing
+            await this.channel.assertExchange(exchange, 'direct', { durable: true });
 
-            // Send the message to the specified queue
-            this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(payload)));
+            // Send the message to the specified exchange with the routing key
+            this.channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)));
 
-            console.log(`Sent message to queue '${queue}':`, payload);
+            console.log(`Sent message to exchange '${exchange}' with routing key '${routingKey}':`, payload);
             return true;
         } catch (error) {
             console.error("Error producing message:", error);

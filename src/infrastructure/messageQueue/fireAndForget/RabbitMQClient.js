@@ -1,8 +1,8 @@
 const { connect } = require("amqplib");
-const config = require("./config");
+const config = require("./settings/config");
 const Consumer = require("./consumer");
 const Producer = require("./producer");
-const Message = require("./messageTemplate");
+const Message = require("./settings/messageTemplate");
 
 class RabbitMQClient {
     constructor() {
@@ -38,15 +38,31 @@ class RabbitMQClient {
             this.producerChannel = await this.connection.createChannel();
             this.consumerChannel = await this.connection.createChannel();
 
-            // Assert multiple queues
-            const Queues = [];
-            for (const queueName of config.rabbitMQ.queues) {
-                const { queue } = await this.consumerChannel.assertQueue(queueName, { durable: true });
-                Queues.push(queue);
+            // Assert the current service's exchange and queue
+            await this.consumerChannel.assertExchange(config.rabbitMQ.exchange, 'direct', { durable: true });
+            await this.consumerChannel.assertQueue(config.rabbitMQ.queue, { durable: true });
+
+            // Collect all unique exchanges from bindings
+            const exchanges = new Set();
+            for (const binding of config.rabbitMQ.bindings) {
+                exchanges.add(binding.exchange);
             }
 
+            // Assert all exchanges
+            for (const exchange of exchanges) {
+                await this.consumerChannel.assertExchange(exchange, 'direct', { durable: true });
+            }
+
+            // Bind the queue to the exchanges with the specified routing keys
+            for (const binding of config.rabbitMQ.bindings) {
+                for (const routingKey of binding.routingKeys) {
+                    await this.consumerChannel.bindQueue(config.rabbitMQ.queue, binding.exchange, routingKey);
+                }
+            }
+
+            // Initialize producer and consumer
             this.producer = new Producer(this.producerChannel);
-            this.consumer = new Consumer(this.consumerChannel, Queues);
+            this.consumer = new Consumer(this.consumerChannel, [config.rabbitMQ.queue]);
 
             this.consumer.consumeMessages();
 
@@ -58,12 +74,12 @@ class RabbitMQClient {
         }
     }
 
-    async produce(queueName, data) {
+    async produce(routingKey, data) {
         if (!this.isInitialized) {
             throw new Error("RabbitMQ client is not initialized.");
         }
         const message = new Message("test", "course-service", data);
-        return await this.producer.produceMessage(queueName, message);
+        return await this.producer.produceMessage(config.rabbitMQ.exchange, routingKey, message);
     }
 }
 
