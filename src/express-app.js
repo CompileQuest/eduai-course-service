@@ -6,6 +6,7 @@ const apiRoutes = require('./api/routes/index')
 const errorHandler = require('./utils/error-handler');
 const ErrorHandler = require('./utils/error-handler');
 const RabbitMQClient = require('./infrastructure/messageQueue/fireAndForget/RabbitMQClient');
+const index = require('./infrastructure/messageQueue/fireAndForget/index')
 const cookieParser = require('cookie-parser');
 module.exports = async (app) => {
   // Middleware

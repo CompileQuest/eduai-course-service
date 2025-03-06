@@ -6,7 +6,7 @@ class Producer {
     async produceMessage(exchange, routingKey, payload) {
         try {
             // Ensure the exchange exists before publishing
-            await this.channel.assertExchange(exchange, 'direct', { durable: true });
+            await this.channel.assertExchange(exchange, 'topic', { durable: true });
 
             // Send the message to the specified exchange with the routing key
             this.channel.publish(exchange, routingKey, Buffer.from(JSON.stringify(payload)));

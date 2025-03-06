@@ -8,7 +8,8 @@ const requiredEnvVars = {
     PORT: process.env.PORT,
     DATABASE_URL: process.env.DATABASE_URL,
     TUNNEL_DOMAIN: process.env.TUNNEL_DOMAIN,
-    RABBITMQ_URL: process.env.RABBITMQ_URL
+    RABBITMQ_URL: process.env.RABBITMQ_URL,
+    SERVICE_NAME: process.env.SERVICE_NAME
 
     // SVIX_API_URL: process.env.SVIX_API_URL,
     //SVIX_AUTH_TOKEN: process.env.SVIX_AUTH_TOKEN,
@@ -33,6 +34,7 @@ module.exports = {
     PORT: requiredEnvVars.PORT,
     DATABASE_URL: requiredEnvVars.DATABASE_URL,
     TUNNEL_DOMAIN: requiredEnvVars.TUNNEL_DOMAIN,
-    RABBITMQ_URL: requiredEnvVars.RABBITMQ_URL
+    RABBITMQ_URL: requiredEnvVars.RABBITMQ_URL,
+    SERVICE_NAME: requiredEnvVars.SERVICE_NAME
 
 };  // Export PORT, DATABASE_URL

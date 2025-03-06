@@ -1,5 +1,5 @@
 const rabbitMQClient = require('./RabbitMQClient'); // Import the RabbitMQ client
-const { RoutingKeys } = require('./routingKeys'); // Import routing keys
+const { RoutingKeys } = require('./settings/routingKeys'); // Import routing keys
 const Message = require('./settings/messageTemplate'); // Import the Message class
 
 // Simulate the course service
@@ -12,8 +12,19 @@ async function simulateCourseService() {
         title: "Introduction to RabbitMQ",
         instructor: "Jane Doe",
     };
+    const courseEnrolledPayload = {
+        courseId: "456",
+        title: "Introduction to hahahahahh",
+        instructor: "Jane Doe",
+    };
     const courseCreatedMessage = new Message(RoutingKeys.COURSE_CREATED, "course_service", courseCreatedPayload);
-    await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, courseCreatedMessage);
+    const courseEnrolledMessage = new Message(RoutingKeys.COURSE_CREATED, "course_service", courseEnrolledPayload);
+
+    for (let i = 0; i < 10; i) {
+        await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, courseCreatedMessage);
+        await rabbitMQClient.produce(RoutingKeys.COURSE_ENROLLED, courseEnrolledMessage);
+
+    }
     console.log("Course Service: Published COURSE_CREATED event.");
 }
 

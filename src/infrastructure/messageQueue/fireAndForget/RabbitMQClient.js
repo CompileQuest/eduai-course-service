@@ -39,7 +39,7 @@ class RabbitMQClient {
             this.consumerChannel = await this.connection.createChannel();
 
             // Assert the current service's exchange and queue
-            await this.consumerChannel.assertExchange(config.rabbitMQ.exchange, 'direct', { durable: true });
+            await this.consumerChannel.assertExchange(config.rabbitMQ.exchange, 'topic', { durable: true });
             await this.consumerChannel.assertQueue(config.rabbitMQ.queue, { durable: true });
 
             // Collect all unique exchanges from bindings
@@ -50,7 +50,7 @@ class RabbitMQClient {
 
             // Assert all exchanges
             for (const exchange of exchanges) {
-                await this.consumerChannel.assertExchange(exchange, 'direct', { durable: true });
+                await this.consumerChannel.assertExchange(exchange, 'topic', { durable: true });
             }
 
             // Bind the queue to the exchanges with the specified routing keys

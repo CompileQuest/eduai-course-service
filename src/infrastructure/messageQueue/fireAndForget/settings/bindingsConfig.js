@@ -5,7 +5,7 @@ module.exports = {
         exchange: "course_exchange",
         queue: "course_queue",
         bindings: [
-            { exchange: "user_exchange", routingKeys: [RoutingKeys.USER_CREATED, RoutingKeys.USER_DELETED] },
+            { exchange: "user_exchange", routingKeys: [RoutingKeys.USER_CREATED, RoutingKeys.USER_DELETED_SOFT] },
             { exchange: "payment_exchange", routingKeys: [RoutingKeys.PAYMENT_COMPLETED] },
         ],
     },

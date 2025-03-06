@@ -1,11 +1,12 @@
-const { RABBITMQ_URL } = require('../../../../../config/index');
+const { RABBITMQ_URL, SERVICE_NAME } = require('../../../../config/index');
 const bindingsConfig = require("./bindingsConfig");
-const serviceName = "user_service"; // Change per service
+
+console.log(SERVICE_NAME);
 module.exports = {
     rabbitMQ: {
         url: RABBITMQ_URL,
-        exchange: bindingsConfig[serviceName].exchange,
-        queue: bindingsConfig[serviceName].queue,
-        bindings: bindingsConfig[serviceName].bindings,
+        exchange: bindingsConfig[SERVICE_NAME].exchange,
+        queue: bindingsConfig[SERVICE_NAME].queue,
+        bindings: bindingsConfig[SERVICE_NAME].bindings,
     },
 };
