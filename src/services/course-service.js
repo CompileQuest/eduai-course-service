@@ -1,8 +1,9 @@
-const CourseRepository = require('../database/repository/course-repository');
-const { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } = require('../utils/app-error')
-const { uploadImage } = require('./cloudinary/image-uploader');
-const { deleteImageFromCloudinary } = require('./cloudinary/cloudinary-utils');
-const ResponseHelper = require('../utils/responseHelper');
+import CourseRepository from '../database/repository/course-repository.js';
+import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } from '../utils/app-errors.js';
+import { uploadImage } from './cloudinary/image-uploader.js';
+import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
+import ResponseHelper from '../utils/responseHelper.js';
+
 class CourseService {
     constructor() {
         this.repository = new CourseRepository();
@@ -497,4 +498,4 @@ class CourseService {
 }
 
 
-module.exports = CourseService;
+export default CourseService;

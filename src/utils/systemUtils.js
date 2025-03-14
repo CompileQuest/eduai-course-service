@@ -1,6 +1,6 @@
-const path = require('path');
-const { spawn, execSync } = require('child_process');
-const fs = require('fs');
+import path from 'path';
+import { spawn, execSync } from 'child_process';
+import fs from 'fs';
 
 // ANSI color codes for terminal output
 const colors = {
@@ -42,11 +42,11 @@ function killPort(port) {
 
         process.stdout.on('data', (data) => {
             console.log(`${colors.green}${data.toString().trim()}${colors.reset}`);
-        }); 
+        });
 
         process.stderr.on('data', (data) => {
             console.error(`❌ Killing Port Error: ${data}`);
-        }); 
+        });
 
         process.on('exit', (code) => {
             console.log(`✅ Killing port process exited with code: ${code}`);
@@ -108,9 +108,4 @@ function runShellCommand(command) {
 }
 
 // Export all utility functions
-module.exports = {
-    ensureScriptExecutable,
-    killPort,
-    startTunnel,
-    runShellCommand
-};
+export { ensureScriptExecutable, killPort, startTunnel, runShellCommand };

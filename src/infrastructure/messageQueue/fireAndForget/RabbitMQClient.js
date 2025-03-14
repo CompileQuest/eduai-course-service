@@ -1,9 +1,9 @@
-const { connect } = require("amqplib");
-const config = require("./settings/config");
-const Consumer = require("./consumer");
-const Producer = require("./producer");
-const Message = require("./settings/messageTemplate");
-
+import { connect } from 'amqplib';
+import config from './settings/config.js';
+import Consumer from './consumer.js';
+import Producer from './producer.js';
+import BrokerMessage from './settings/brokerMessage.js';
+import { SERVICE_NAME } from '../../../config/index.js';
 class RabbitMQClient {
     constructor() {
         if (RabbitMQClient.instance) {
@@ -74,15 +74,15 @@ class RabbitMQClient {
         }
     }
 
-    async produce(routingKey, data) {
+    async produce(routingKey, payload) {
         if (!this.isInitialized) {
             throw new Error("RabbitMQ client is not initialized.");
         }
-        const message = new Message("test", "course-service", data);
+        const userCreatedMessage = new BrokerMessage(routingKey, payload);
         return await this.producer.produceMessage(config.rabbitMQ.exchange, routingKey, message);
     }
 }
 
 // Create and export a single instance of RabbitMQClient
 const rabbitMQClient = new RabbitMQClient();
-module.exports = rabbitMQClient;
+export default rabbitMQClient;

@@ -1,9 +1,10 @@
-const depd = require('prisma');
-const QuizRepository = require('../database/repository/quiz-handler-repository');
-const { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } = require('../utils/app-error')
-const { uploadImage } = require('./cloudinary/image-uploader');
-const { deleteImageFromCloudinary } = require('./cloudinary/cloudinary-utils');
-const ResponseHelper = require('../utils/responseHelper');
+import depd from 'prisma';
+import QuizRepository from '../database/repository/quiz-handler-repository.js';
+import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } from '../utils/app-errors.js';
+import { uploadImage } from './cloudinary/image-uploader.js';
+import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
+import ResponseHelper from '../utils/responseHelper.js';
+
 class QuizService {
     constructor() {
         this.repository = new QuizRepository();
@@ -69,4 +70,4 @@ class QuizService {
 }
 
 
-module.exports = QuizService;
+export default QuizService;

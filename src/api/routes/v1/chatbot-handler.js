@@ -1,10 +1,9 @@
-const ChatBotService = require('../../../services/chatbot-service');
-const { BadRequestError } = require('../../../utils/app-error'); // Change this import
-const express = require('express');
-
-
+import ChatBotService from '../../../services/chatbot-service.js';
+import { BadRequestError } from '../../../utils/app-errors.js';
+import express from 'express';
 const service = new ChatBotService();
 const router = express.Router();
+
 
 
 router.get('/', (req, res) => {
@@ -44,5 +43,5 @@ router.get('/:courseId/files', async (req, res, next) => {
     }
 });
 
-module.exports = router;
+export default router;
 

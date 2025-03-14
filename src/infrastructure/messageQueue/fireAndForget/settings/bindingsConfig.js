@@ -1,26 +1,14 @@
-const { RoutingKeys } = require("./routingKeys");
+import { RoutingKeys } from "./routingKeys.js";
 
-module.exports = {
+const bindingsConfig = {
     course_service: {
         exchange: "course_exchange",
         queue: "course_queue",
         bindings: [
-            { exchange: "user_exchange", routingKeys: [RoutingKeys.USER_CREATED, RoutingKeys.USER_DELETED_SOFT] },
-            { exchange: "payment_exchange", routingKeys: [RoutingKeys.PAYMENT_COMPLETED] },
+            // { exchange: "user_exchange", routingKeys: [RoutingKeys.COURSE_CREATED] },
         ],
-    },
-    user_service: {
-        exchange: "user_exchange",
-        queue: "user_queue",
-        bindings: [
-            { exchange: "course_exchange", routingKeys: [RoutingKeys.COURSE_CREATED] },
-        ],
-    },
-    payment_service: {
-        exchange: "payment_exchange",
-        queue: "payment_queue",
-        bindings: [
-            { exchange: "user_exchange", routingKeys: [RoutingKeys.USER_CREATED] },
-        ],
-    },
+    }
 };
+
+
+export default bindingsConfig;

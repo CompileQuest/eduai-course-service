@@ -1,14 +1,13 @@
-const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
-const prisma = new PrismaClient(); // Instantiate Prisma Client
-const upload = require('../../../middleware/upload');
-const CloudinaryService = require('../../../services/cloudinary/cloudinary-service');
-const validate = require('../../../middleware/validate');
-const { videoUploadedSchema } = require('../../../validation/cloudinaryValidation');
-const { APIError, InternalServerError, BadRequestError, ForbiddenError, AppError, NotFoundError } = require('../../../utils/app-error')
-const express = require('express');
+import { PrismaClient, Prisma } from '@prisma/client'; // Import Prisma Client and Prisma errors
+import upload from '../../../middleware/upload.js';
+import CloudinaryService from '../../../services/cloudinary/cloudinary-service.js';
+import { APIError, InternalServerError, BadRequestError, ForbiddenError, AppError, NotFoundError } from '../../../utils/app-errors.js';
+import express from 'express';
 
+const prisma = new PrismaClient(); // Instantiate Prisma Client
 const service = new CloudinaryService();
 const router = express.Router();
+
 
 router.get('/testing', async (req, res, next) => {
     try {
@@ -80,4 +79,4 @@ router.post(
 
 
 
-module.exports = router;
+export default router;

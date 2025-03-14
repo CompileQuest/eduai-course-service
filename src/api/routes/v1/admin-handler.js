@@ -1,6 +1,6 @@
-const AdminService = require('../../../services/admin-service');
-const { BadRequestError } = require('../../../utils/app-error'); // Change this import
-const express = require('express');
+import AdminService from '../../../services/admin-service.js';
+import { BadRequestError } from '../../../utils/app-errors.js';
+import express from 'express';
 
 
 const adminService = new AdminService();
@@ -51,5 +51,5 @@ router.get('/courses/filter', async (req, res, next) => {
 });
 
 
-module.exports = router;
+export default router;
 

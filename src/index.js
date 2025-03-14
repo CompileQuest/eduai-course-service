@@ -1,7 +1,8 @@
-const express = require('express');
-const expressApp = require('./express-app');
-const { PORT, TUNNEL_DOMAIN } = require('./config');
-const { killPort, startTunnel } = require('./utils/systemUtils');
+import express from 'express';
+import expressApp from './express-app.js';
+import { PORT, TUNNEL_DOMAIN } from './config/index.js';
+import { killPort, startTunnel } from './utils/systemUtils.js';
+
 const StartServer = async () => {
     //await killPort(PORT); 
     const app = express();

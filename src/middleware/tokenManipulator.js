@@ -24,5 +24,4 @@ const tokenManipulator = (mode = "none") => {
         next();
     };
 };
-
-module.exports = tokenManipulator;
+export default tokenManipulator;

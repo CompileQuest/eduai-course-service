@@ -1,5 +1,4 @@
-const CourseService = require("../../services/course-service");
-
+import CourseService from "../../services/course-service.js";
 class MessageHandler {
     constructor() {
         this.courseService = new CourseService();
@@ -80,4 +79,4 @@ class MessageHandler {
     }
 }
 
-module.exports = MessageHandler;
+export default MessageHandler;

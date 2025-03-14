@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+import { APIError, STATUS_CODES, AppError } from '../../utils/app-errors.js';
+
 const prisma = new PrismaClient();
-const { APIError, STATUS_CODES } = require('../../utils/error-handler');
-const { AppError } = require('../../utils/error-handler');
 
 class CourseRepository {
     constructor() {
@@ -585,4 +585,4 @@ class CourseRepository {
 
 }
 
-module.exports = CourseRepository; 
+export default CourseRepository; 

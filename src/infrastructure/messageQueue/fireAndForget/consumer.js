@@ -1,6 +1,4 @@
-const { parse } = require('dotenv');
-const MessageHandler = require('../messageHandler');
-const { ServerDescriptionChangedEvent } = require('mongodb');
+import MessageHandler from '../messageHandler.js';
 
 class Consumer {
     constructor(channel, queues) {
@@ -66,4 +64,4 @@ class Consumer {
     }
 }
 
-module.exports = Consumer;
+export default Consumer;

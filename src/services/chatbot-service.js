@@ -1,9 +1,10 @@
-const depd = require('prisma');
-const ChatBotRepository = require('../database/repository/chatbot-repository');
-const { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } = require('../utils/app-error')
-const { uploadImage } = require('./cloudinary/image-uploader');
-const { deleteImageFromCloudinary } = require('./cloudinary/cloudinary-utils');
-const ResponseHelper = require('../utils/responseHelper');
+import depd from 'prisma';
+import ChatBotRepository from '../database/repository/chatbot-repository.js';
+import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } from '../utils/app-errors.js';
+import { uploadImage } from './cloudinary/image-uploader.js';
+import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
+import ResponseHelper from '../utils/responseHelper.js';
+
 class ChatBotService {
     constructor() {
         this.repository = new ChatBotRepository();
@@ -69,5 +70,4 @@ class ChatBotService {
 
 }
 
-
-module.exports = ChatBotService;
+export default ChatBotService;

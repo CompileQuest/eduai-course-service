@@ -1,80 +1,68 @@
-const { createLogger, transports, format } = require('winston');
-const chalk = require('chalk'); // Add this package for colorized output
-const { AppError, STATUS_CODES } = require('./app-error.js');
-
-// Winston Logger Setup
-const LogErrors = createLogger({
-    format: format.combine(
-        format.timestamp(),
-        format.errors({ stack: true }),
-        format.json()
-    ),
-    transports: [
-        new transports.Console(),
-        new transports.File({ filename: 'app_error.log' })
-    ]
-});
+import { AppError } from './app-errors.js';
+import chalk from 'chalk'; // For colored terminal output
 
 class ErrorLogger {
+    constructor() { }
+
     async logError(err) {
-        const timestamp = new Date().toISOString();
+        // Define colors for different error types
+        const errorColors = {
+            Error: chalk.red.bold, // Red for generic errors
+            TypeError: chalk.yellow.bold, // Yellow for type errors
+            AppError: chalk.blue.bold, // Blue for custom AppError
+            default: chalk.white.bold, // White for other errors
+        };
 
-        console.log(chalk.red.bold('\n========= ERROR LOG ========='));
-        console.log(chalk.yellow(`🔥 [${timestamp}]`));
-        console.log(chalk.red.bold('Error Type:'), chalk.white(err.name || 'Unknown Error'));
-        console.log(chalk.red.bold('Message:'), chalk.white(err.message || 'No message provided'));
+        // Get the color for the current error type
+        const color = errorColors[err.name] || errorColors.default;
 
-        if (err.stack) {
-            console.log(chalk.blue.bold('\nStack Trace:'));
-            console.log(chalk.white(err.stack));
-        }
-        console.log(chalk.red.bold('=============================\n'));
-
-        // Log error in file
-        LogErrors.error({
-            level: 'error',
-            timestamp,
-            name: err.name,
-            message: err.message,
-            stack: err.stack
-        });
+        // Print the error in a clean, colorful format
+        console.log(chalk.bgRed('🚨 [Error Logger] ===================='));
+        console.log(color(`📛 Error: ${err.name}`));
+        console.log(color(`📛 status Code: ${err.statusCode}`));
+        console.log(color(`📝 Message: ${err.message}`));
+        console.log(color(`🔍 Stack: ${err.stack}`));
+        console.log(chalk.bgRed('======================================'));
     }
 
     isTrustError(error) {
-        return error instanceof AppError ? error.isOperational : false;
+        // Check if the error is an instance of AppError
+        return error instanceof AppError;
     }
 }
 
 const ErrorHandler = async (err, req, res, next) => {
     const errorLogger = new ErrorLogger();
 
-    // Log the error
-    await errorLogger.logError(err);
-
-    // Determine response
-    const statusCode = err.statusCode || STATUS_CODES.INTERNAL_ERROR;
-    const response = {
-        success: false,
-        statusCode,
-        error: err.name || 'Server Error',
-        message: err.message || 'Something went wrong',
-    };
-
-    if (err.description) {
-        response.description = err.description;
-    }
-
-    if (errorLogger.isTrustError(err)) {
-        return res.status(statusCode).json(response);
-    }
-
-    // For unknown errors, hide details from the client
-    return res.status(500).json({
-        success: false,
-        statusCode: 500,
-        error: 'Internal Server Error',
-        message: 'An unexpected error occurred. Please try again later.',
+    // Handle uncaught exceptions
+    process.on('uncaughtException', (error) => {
+        console.log(chalk.bgRed('🛑 [Uncaught Exception]'), error);
+        errorLogger.logError(error);
+        if (!errorLogger.isTrustError(error)) {
+            process.exit(1); // Exit process for untrusted errors
+        }
     });
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (reason, promise) => {
+        console.log(chalk.bgRed('🛑 [Unhandled Rejection]'), reason);
+        throw reason; // Re-throw to handle it in the uncaughtException handler
+    });
+
+    // Handle the error
+    if (err) {
+        await errorLogger.logError(err);
+        if (errorLogger.isTrustError(err)) {
+            // Trusted error: Send response to client
+            return res.status(err.statusCode).json({ message: err.description });
+        } else {
+            // Untrusted error: Exit process
+            console.log(chalk.bgRed('🛑 Fatal error encountered. Shutting down...'));
+            process.exit(1);
+        }
+    }
+
+    next();
 };
 
-module.exports = ErrorHandler; 
+export default ErrorHandler;

@@ -1,4 +1,4 @@
-const { ForbiddenError, UnauthorizedError } = require('../../utils/app-error');
+import { ForbiddenError, UnauthorizedError } from '../../utils/app-errors.js';
 
 const checkRole = (requiredRoles = []) => {
     return (req, res, next) => {
@@ -19,6 +19,7 @@ const checkRole = (requiredRoles = []) => {
         next();
     };
 };
+
 const getUserId = (auth) => {
     if (!auth || !auth.sub) {
         throw new Error("User ID not found in authentication data");
@@ -26,4 +27,4 @@ const getUserId = (auth) => {
     return auth.sub; // `sub` contains the user ID
 };
 
-module.exports = { checkRole, getUserId };
+export { checkRole, getUserId };

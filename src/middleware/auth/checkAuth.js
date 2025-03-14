@@ -1,6 +1,6 @@
-const { expressjwt: jwt } = require("express-jwt");
-const jwksRsa = require("jwks-rsa");
-const { UnauthorizedError, ForbiddenError, BadRequestError } = require("../../utils/app-error"); // Import custom error classes
+import { expressjwt as jwt } from "express-jwt";
+import jwksRsa from "jwks-rsa";
+import { UnauthorizedError, ForbiddenError, BadRequestError } from "../../utils/app-errors.js"; // Import custom error classes
 
 // Function to extract JWT from request
 const getTokenFromRequest = (req) => {
@@ -27,14 +27,14 @@ const checkAuth = (req, res, next) => {
             cacheMaxAge: 10 * 60 * 1000,
             rateLimit: true,
             jwksRequestsPerMinute: 5,
-            jwksUri: "http://localhost:9000/api/v1/auth/jwt/jwks.json",
+            jwksUri: "http://localhost:8080/api/v1/auth/jwt/jwks.json",
         }),
         algorithms: ["RS256"],
         getToken: getTokenFromRequest,
     })(req, res, (err) => {
         if (err) {
             if (err.name === "UnauthorizedError") {
-                console.log("we are here ")
+                console.log("we are here ");
                 return next(new UnauthorizedError("Invalid authentication token"));
             }
             if (err.code === "credentials_required") {
@@ -49,4 +49,4 @@ const checkAuth = (req, res, next) => {
     });
 };
 
-module.exports = { checkAuth };
+export { checkAuth };

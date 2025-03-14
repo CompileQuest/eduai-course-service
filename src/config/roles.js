@@ -3,5 +3,4 @@ const ROLES = Object.freeze({
     INSTRUCTOR: "instructor",
     STUDENT: "student",
 });
-
-module.exports = ROLES;
+export default ROLES;

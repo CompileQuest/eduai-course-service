@@ -1,14 +1,15 @@
-const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
+import { PrismaClient, Prisma } from '@prisma/client'; // Import Prisma Client and Prisma errors
+import upload from '../../../middleware/upload.js';
+import { checkAuth } from '../../../middleware/auth/checkAuth.js';
+import CourseService from '../../../services/course-service.js';
+import tokenManipulator from "../../../middleware/tokenManipulator.js";
+import { BadRequestError } from '../../../utils/app-errors.js'; // Change this import
+import express from 'express';
+import { ServerDescriptionChangedEvent } from 'mongodb';
+import { checkRole, getUserId } from '../../../middleware/auth/authHelper.js';
+import roles from '../../../config/roles.js';
+
 const prisma = new PrismaClient(); // Instantiate Prisma Client
-const upload = require('../../../middleware/upload');
-const { checkAuth } = require('../../../middleware/auth/checkAuth');
-const CourseService = require('../../../services/course-service');
-const tokenManipulator = require("../../../middleware/tokenManipulator")
-const { BadRequestError } = require('../../../utils/app-error'); // Change this import
-const express = require('express');
-const { ServerDescriptionChangedEvent } = require('mongodb');
-const { checkRole, getUserId } = require('../../../middleware/auth/authHelper');
-const roles = require('../../../config/roles')
 const service = new CourseService();
 const router = express.Router();
 
@@ -314,6 +315,5 @@ router.get('/:courseId/get-quizes', async (req, res, next) => {
     }
 });
 
-
-module.exports = router;
+export default router;
 

@@ -1,4 +1,4 @@
-const { cloudinary } = require('../../config/cloudinary');
+import { cloudinary } from '../../config/cloudinary.js';
 
 async function uploadImage(fileBuffer, folder = 'default') {
     try {
@@ -8,7 +8,7 @@ async function uploadImage(fileBuffer, folder = 'default') {
 
 
         // Add basic file validation
-                const fileData = fileBuffer;
+        const fileData = fileBuffer;
         if (!Buffer.isBuffer(fileData)) {
             throw new Error('Invalid file format: File must be a Buffer');
         }
@@ -22,7 +22,7 @@ async function uploadImage(fileBuffer, folder = 'default') {
             });
 
             uploadStream.end(fileData);
-        }); 
+        });
 
         return {
             url: result.secure_url,
@@ -50,6 +50,6 @@ async function deleteImageFromCloudinary(publicId) {
         throw new Error("Failed to delete image from Cloudinary");
     }
 }
-module.exports = { uploadImage, deleteImageFromCloudinary };
+export { uploadImage, deleteImageFromCloudinary };
 
 

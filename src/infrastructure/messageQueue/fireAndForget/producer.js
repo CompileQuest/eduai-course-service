@@ -20,4 +20,4 @@ class Producer {
     }
 }
 
-module.exports = Producer;
+export default Producer;

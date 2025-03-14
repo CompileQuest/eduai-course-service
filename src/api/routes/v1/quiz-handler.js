@@ -1,9 +1,9 @@
-const { PrismaClient, Prisma } = require('@prisma/client'); // Import Prisma Client and Prisma errors
-const prisma = new PrismaClient(); // Instantiate Prisma Client
-const QuizService = require('../../../services/quiz-service');
-const { BadRequestError } = require('../../../utils/app-error'); // Change this import
-const express = require('express');
+import { PrismaClient, Prisma } from '@prisma/client'; // Import Prisma Client and Prisma errors
+import QuizService from '../../../services/quiz-service.js';
+import { BadRequestError } from '../../../utils/app-errors.js'; // Change this import
+import express from 'express';
 
+const prisma = new PrismaClient(); // Instantiate Prisma Client
 
 const service = new QuizService();
 const router = express.Router();
@@ -57,5 +57,5 @@ router.get("/test-error", async (req, res, next) => {
     }
 });
 
-module.exports = router;
+export default router;
 

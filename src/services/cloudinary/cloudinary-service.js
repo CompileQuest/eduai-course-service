@@ -1,4 +1,5 @@
-const cloudinary = require("cloudinary").v2;
+import { cloudinary } from '../../config/cloudinary.js';
+
 class CloudinaryService {
 
     //done
@@ -152,4 +153,4 @@ class CloudinaryService {
 
 }
 
-module.exports = CloudinaryService;
+export default CloudinaryService;

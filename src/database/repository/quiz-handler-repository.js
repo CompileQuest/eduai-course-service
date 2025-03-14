@@ -1,8 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
+import { APIError, STATUS_CODES, InternalServerError } from '../../utils/app-errors.js';
+
 const prisma = new PrismaClient();
-const { APIError, STATUS_CODES, InternalServerError, } = require('../../utils/app-error');
-
-
 
 class QuizRepository {
     constructor() {
@@ -99,4 +98,4 @@ class QuizRepository {
 
 }
 
-module.exports = QuizRepository; 
+export default QuizRepository; 

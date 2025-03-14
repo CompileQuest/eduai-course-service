@@ -1,8 +1,9 @@
-const AdminRepository = require('../database/repository/admin-repository');
-const { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } = require('../utils/app-error')
-const { uploadImage } = require('./cloudinary/image-uploader');
-const { deleteImageFromCloudinary } = require('./cloudinary/cloudinary-utils');
-const ResponseHelper = require('../utils/responseHelper');
+import AdminRepository from '../database/repository/admin-repository.js';
+import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError } from '../utils/app-errors.js';
+import { uploadImage } from './cloudinary/image-uploader.js';
+import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
+import ResponseHelper from '../utils/responseHelper.js';
+
 class AdminService {
     constructor() {
         this.repository = new AdminRepository();
@@ -49,9 +50,8 @@ class AdminService {
         }
     }
 
-
-
 }
 
 
-module.exports = AdminService;
+
+export default AdminService;

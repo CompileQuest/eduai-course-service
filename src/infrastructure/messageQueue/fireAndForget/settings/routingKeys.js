@@ -30,4 +30,4 @@ const RoutingKeys = {
 
 };
 
-module.exports = { RoutingKeys };
+export { RoutingKeys };
