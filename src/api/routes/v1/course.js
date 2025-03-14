@@ -50,6 +50,22 @@ router.get('/categories', async (req, res, next) => {
 });
 
 
+router.post('/courses/getLandingPageCourses',
+    async (req, res, next) => {
+        try {
+
+            const filter = req.body;
+
+
+            const FilteredCourses = await service.getLandingPageCourses(filter);
+
+            res.status(201).json(FilteredCourses);
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 router.post('/courses/create-course-template',
     checkAuth,
     upload.single('thumbnail'),

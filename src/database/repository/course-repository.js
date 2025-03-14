@@ -18,6 +18,13 @@ class CourseRepository {
         }
     }
 
+
+    async getLandingPageCourses(filter, limit = 10) {
+        return await this.prisma.course.findMany({
+            take: limit, // Limits the number of courses returned
+        });
+    }
+
     async FetchAllCourses() {
         try {
             return await this.prisma.course.findMany();

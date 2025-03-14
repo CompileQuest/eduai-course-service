@@ -15,6 +15,31 @@ class CourseService {
     }
 
 
+
+    async getLandingPageCourses(filter) {
+        try {
+
+            const courses = await this.repository.getLandingPageCourses(filter);
+            console.log("Courses Fetched Successfully");
+
+            // Return a success response using ResponseHelper
+            return ResponseHelper.success('Courses Fetched Successfuly', courses);
+        } catch (error) {
+            console.error("Error updating thumbnail:", error);
+
+            // Handle specific errors (e.g., image upload or DB update failures)
+            if (error instanceof SomeSpecificError) {
+                return ResponseHelper.error('Specific error message', 400);
+            }
+
+            // General error handling
+            return ResponseHelper.error('Failed to fetch courses', 500);
+        }
+    }
+
+
+
+
     async updateThumbNail(courseId, image) {
         try {
             // 1. Fetch the course to get the existing thumbnail information (to delete)
