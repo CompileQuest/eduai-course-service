@@ -3,6 +3,7 @@ import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError 
 import { uploadImage } from './cloudinary/image-uploader.js';
 import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
 import ResponseHelper from '../utils/responseHelper.js';
+import ROLES from '../config/roles.js';
 
 class CourseService {
     constructor() {
@@ -36,6 +37,65 @@ class CourseService {
             return ResponseHelper.error('Failed to fetch courses', 500);
         }
     }
+
+
+    async FetchCourseProductionById(courseId, userId, currentRole) {
+        try {
+            let course;
+            let ownsCourse = false;
+
+            if (userId && currentRole === ROLES.STUDENT) {
+                // Step 1: Check if the user owns/enrolled in the course via the User Service
+                // TODO: Actually call the User Service to set this value
+                // ownsCourse = await userService.checkEnrollment(courseId, userId);
+
+                if (ownsCourse) {
+                    console.log("1");
+                    // Step 2a: Fetch full course access if user owns the course
+                    course = await this.repository.FetchCourseWithUserAccess(courseId);
+                } else {
+                    console.log("2");
+                    // Step 2b: Fetch locked/public version if user does not own the course
+                    course = await this.repository.FetchCourseProductionById(courseId);
+                }
+            } else {
+                console.log("3");
+                // Step 3: Fetch public version for unauthenticated users
+                course = await this.repository.FetchCourseProductionById(courseId);
+            }
+
+            if (!course) {
+                return ResponseHelper.error('Course not found', 404);
+            }
+
+            // ✅ Add ownership info to the course object
+            course.ownsCourse = ownsCourse;
+
+            // Instructor data
+            const instructorData = {
+                name: "Jenny Wilson",
+                role: "Front-end Developer, Designer",
+                rating: 4.5,
+                students: 11604,
+                courses: 32,
+                reviews: 12230,
+                verified: true,
+                bio: "I am an Innovation designer focusing on UX/UI based in Berlin. As a creative resident at Figma, I explored the city of the future and how new technologies."
+            };
+
+            // Add instructor data to the course object
+            course.instructorData = instructorData;
+
+            return ResponseHelper.success('Course fetched successfully', course);
+        } catch (error) {
+            console.error("Error fetching course:", error);
+            return ResponseHelper.error('Failed to fetch course', 500);
+        }
+    }
+
+
+
+
 
 
 
@@ -177,7 +237,7 @@ class CourseService {
                 throw error;
             } else {
                 console.error("Unexpected error while fetching instructor courses", error);
-                throw new InternalServerError("An error occurred while fetchign instructor courses !!");
+                throw new InternalServerError("An error occurred while fetchign instructor courses !!", error.message);
             }
         }
     }

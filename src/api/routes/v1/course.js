@@ -6,7 +6,7 @@ import tokenManipulator from "../../../middleware/tokenManipulator.js";
 import { BadRequestError } from '../../../utils/app-errors.js'; // Change this import
 import express from 'express';
 import { ServerDescriptionChangedEvent } from 'mongodb';
-import { checkRole, getUserId } from '../../../middleware/auth/authHelper.js';
+import { checkRole, getUserId, getCurrentRole } from '../../../middleware/auth/authHelper.js';
 import roles from '../../../config/roles.js';
 
 const prisma = new PrismaClient(); // Instantiate Prisma Client
@@ -67,7 +67,6 @@ router.post('/courses/getLandingPageCourses',
 );
 
 router.post('/courses/create-course-template',
-    checkAuth,
     upload.single('thumbnail'),
     async (req, res, next) => {
         try {
@@ -91,7 +90,7 @@ router.post('/courses/create-course-template',
 
 
 
-router.put('/courses/:courseId/thumbnail-upload', checkAuth,
+router.put('/courses/:courseId/thumbnail-upload',
     upload.single('thumbnail'), async (req, res, next) => {
         try {
             const { courseId } = req.params;
@@ -107,10 +106,10 @@ router.put('/courses/:courseId/thumbnail-upload', checkAuth,
     });
 
 
-router.get('/instructor-courses', checkAuth, checkRole([roles.ADMIN, roles.INSTRUCTOR]), async (req, res, next) => {
+router.get('/instructor-courses', async (req, res, next) => {
     try {
-        const tempUserId = getUserId(req.auth);
-        console.log("the user id is ", tempUserId);
+        // const tempUserId = getUserId(req.auth);
+        //console.log("the user id is ", tempUserId);
         const page = parseInt(req.query.page, 10);
         const limit = parseInt(req.query.limit, 10);
         const instructorId = 'uuid_here_of_instructor_test';
@@ -143,6 +142,23 @@ router.get('/courses/draft-courses/:id', async (req, res, next) => {
         const { id } = req.params;
         console.log("Fetching course with id:", id);
         const course = await service.FetchCourseTemplateById(id);
+        res.status(200).json(course);
+    } catch (err) {
+        next(err);
+    }
+});
+
+
+
+router.get('/courses/production/:courseId', async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const userId = getUserId(req.auth);
+        const currentRole = getCurrentRole(req.auth);
+        console.log("the user id is ", userId);
+        console.log("Fetching production course with id :", courseId);
+        console.log("this is the current user role ", currentRole);
+        const course = await service.FetchCourseProductionById(courseId, userId, currentRole);
         res.status(200).json(course);
     } catch (err) {
         next(err);

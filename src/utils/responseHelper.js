@@ -1,3 +1,4 @@
+import { APIError, STATUS_CODES, AppError } from './app-errors.js';
 class ResponseHelper {
     // Success response structure
     static success(message, data = null) {
@@ -10,12 +11,12 @@ class ResponseHelper {
     }
 
     // Error response structure
-    static error(error) {
+    static error(message, statusCode) {
         return {
             success: false,
-            statusCode: error.statusCode || STATUS_CODES.INTERNAL_ERROR,
-            message: error.message || 'An unexpected error occurred.',
-            data: error.data || null,  // Include any additional error details if necessary
+            statusCode: statusCode || STATUS_CODES.INTERNAL_ERROR,
+            message: message || 'An unexpected error occurred.',
+            data: null,  // Include any additional error details if necessary
         };
     }
 }

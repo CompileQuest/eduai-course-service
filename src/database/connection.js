@@ -9,7 +9,7 @@ const databaseConnection = async () => {
         console.log('PostgreSQL connected successfully');
     } catch (err) {
         console.error('Error connecting to PostgreSQL:', err);
-        process.exit(1);
+        // process.exit(1);
     }
 };
 

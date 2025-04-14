@@ -19,7 +19,10 @@ model Course {
   discountedPrice       Float?               @map("discounted_price")
   requirements          String?
   duration              Int?
+  averageRating         Float?               @default(0) @map("average_rating")
+  totalReviews          Int?                 @default(0) @map("total_reviews")
   status                String?
+  enrollments           Int                  @default(0) // Simple count of enrollments
   introductionVideoLink String?              @map("introduction_video_link")
   statistics            CourseStatistics?
   sections              Section[]

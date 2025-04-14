@@ -19,6 +19,136 @@ class CourseRepository {
     }
 
 
+    async FetchCourseById(courseId) {
+        try {
+            const course = await this.prisma.course.findUnique({
+                where: { id: courseId },
+                include: {
+                    statistics: true,
+                    sections: {
+                        include: {
+                            videos: true,
+                            files: true,
+                        },
+                    },
+                    reviews: true,
+                    categories: {
+                        include: {
+                            category: true,
+                        },
+                    },
+                    tags: {
+                        include: {
+                            tag: true,
+                        },
+                    },
+                    userProgressCousre: true,
+                    faqs: true,
+                },
+            });
+
+            if (!course) {
+                throw new APIError('Course Not Found', STATUS_CODES.NOT_FOUND, 'Course does not exist');
+            }
+
+            return course;
+        } catch (err) {
+            throw new APIError('Database Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Fetch Course');
+        }
+    }
+
+
+    async FetchCourseProductionById(courseId) {
+        return await this.prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                sections: {
+                    include: {
+                        videos: {
+                            select: {
+                                id: true,
+                                title: true,
+                                order: true,
+                                is_free: true,
+                                duration: true
+                            },
+                        },
+                        files: {
+                            select: {
+                                id: true,
+                                title: true,
+                                order: true,
+                                is_free: true,
+                            },
+                        },
+                    },
+                },
+                statistics: true,
+                reviews: true,
+                categories: {
+                    include: { category: true },
+                },
+                tags: {
+                    include: { tag: true },
+                },
+                faqs: true,
+            },
+        });
+
+
+    }
+
+
+
+
+    async FetchCourseWithUserAccess(courseId) {
+        return await this.prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                sections: {
+                    include: {
+                        videos: {
+                            select: {
+                                id: true,
+                                title: true,
+                                order: true,
+                                is_free: true,
+                                secure_url: true,  // Add secure URL or playback URL for the video
+                                playback_url: true, // Or any specific video link field you're using
+                                duration: true
+                            },
+                        },
+                        files: {
+                            select: {
+                                id: true,
+                                title: true,
+                                order: true,
+                                is_free: true,
+                            },
+                        },
+                    },
+                },
+                statistics: true,
+                reviews: true,
+                categories: {
+                    include: {
+                        category: true,
+                    },
+                },
+                tags: {
+                    include: {
+                        tag: true,
+                    },
+                },
+                faqs: true,
+            },
+        });
+    }
+
+
+
+
+
     async getLandingPageCourses(filter, limit = 10) {
         return await this.prisma.course.findMany({
             take: limit, // Limits the number of courses returned

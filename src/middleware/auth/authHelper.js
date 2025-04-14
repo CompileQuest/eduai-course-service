@@ -1,7 +1,9 @@
 import { ForbiddenError, UnauthorizedError } from '../../utils/app-errors.js';
-
+const mock = true;
 const checkRole = (requiredRoles = []) => {
     return (req, res, next) => {
+
+
         if (!req.auth) {
             return next(new UnauthorizedError("No authentication data found"));
         }
@@ -21,10 +23,28 @@ const checkRole = (requiredRoles = []) => {
 };
 
 const getUserId = (auth) => {
+    if (mock) {
+        return 'asdfa2342fasrq23fwe234fasd';
+    }
     if (!auth || !auth.sub) {
-        throw new Error("User ID not found in authentication data");
+        console.warn("Missing user ID in authentication data");
+        return null;
     }
     return auth.sub; // `sub` contains the user ID
 };
 
-export { checkRole, getUserId };
+
+const getCurrentRole = (auth) => {
+    if (mock) {
+        return 'STUDENT';
+    }
+    if (!auth || !auth.sub) {
+        console.warn("Missing user Role in authentication data");
+        return null;
+    }
+
+    //return auth.sub; // `sub` contains the user ID
+    return auth.role;
+}
+
+export { checkRole, getUserId, getCurrentRole };
