@@ -57,6 +57,86 @@ class CourseRepository {
         }
     }
 
+    // Fetch categories for a given course
+    async fetchCourseCategoryIds(courseId) {
+        const course = await this.prisma.course.findUnique({
+            where: { id: courseId },
+            select: {
+                categories: {
+                    select: {
+                        categoryId: true,
+                    },
+                },
+            },
+        });
+        console.log("before edit", course);
+
+        // Extract array of category IDs
+        const afterEdit = course.categories.map(c => c.categoryId);
+        console.log("after edit ", afterEdit);
+
+        return afterEdit
+    }
+
+    // Fetch related courses based on category IDs
+    async fetchRelatedCoursesByCategory(categoryIds, courseId) {
+        const relatedCourses = await this.prisma.course.findMany({
+            where: {
+                id: {
+                    not: courseId,
+                },
+                categories: {
+                    some: {
+                        categoryId: {
+                            in: categoryIds,
+                        },
+                    },
+                },
+                deletedAt: null, // Only non-deleted courses
+            },
+            select: {
+                id: true,
+                title: true,
+                thumbnailUrl: true,
+                difficultyLevel: true,
+                averageRating: true,
+                totalReviews: true,
+                instructorId: true, // For fetching instructor details later
+                sections: {
+                    select: {
+                        videos: {
+                            select: {
+                                duration: true, // We'll sum these for total hours
+                            },
+                            where: {
+                                deletedAt: null, // Only non-deleted videos
+                            },
+                        },
+                    },
+                    where: {
+                        deletedAt: null, // Only non-deleted sections
+                    },
+                },
+                categories: {
+                    select: {
+                        category: {
+                            select: {
+                                id: true,
+                                name: true,
+                            },
+                        },
+                    },
+                },
+            },
+            take: 6, // 👈 LIMIT the number of results to 5
+        });
+
+        return relatedCourses;
+    }
+
+
+
+
 
     async FetchCourseProductionById(courseId) {
         return await this.prisma.course.findUnique({

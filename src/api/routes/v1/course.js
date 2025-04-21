@@ -179,6 +179,19 @@ router.get('/courses/:id/content', async (req, res, next) => {
     }
 });
 
+router.get('/courses/related-courses/', async (req, res, next) => {
+    try {
+        const { courseId } = req.query;
+        console.log("Fetching related courses to this id :", courseId);
+        const relatedCourses = await service.fetchRelatedCourses(courseId);
+        res.status(200).json(relatedCourses);
+    } catch (err) {
+        //    console.log("form api layer");
+        //  console.log(err);
+        next(err); // Pass error to global error handler
+    }
+});
+
 
 router.put('/courses/:id/sections/sorting', async (req, res, next) => {
     try {

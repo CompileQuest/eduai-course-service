@@ -42,7 +42,7 @@ class CourseService {
     async FetchCourseProductionById(courseId, userId, currentRole) {
         try {
             let course;
-            let ownsCourse = false;
+            let ownsCourse = true;
 
             if (userId && currentRole === ROLES.STUDENT) {
                 // Step 1: Check if the user owns/enrolled in the course via the User Service
@@ -53,6 +53,16 @@ class CourseService {
                     console.log("1");
                     // Step 2a: Fetch full course access if user owns the course
                     course = await this.repository.FetchCourseWithUserAccess(courseId);
+
+                    // convert all videos to free for this user !!
+                    course.sections?.forEach(section => {
+                        section.videos?.forEach(video => {
+                            video.is_free = true;
+                        });
+                        section.files?.forEach(file => {
+                            file.is_free = true;
+                        });
+                    });
                 } else {
                     console.log("2");
                     // Step 2b: Fetch locked/public version if user does not own the course
@@ -74,7 +84,7 @@ class CourseService {
             // Instructor data
             const instructorData = {
                 name: "Jenny Wilson",
-                role: "Front-end Developer, Designer",
+                designation: "Front-end Developer, Designer",
                 rating: 4.5,
                 students: 11604,
                 courses: 32,
@@ -92,6 +102,70 @@ class CourseService {
             return ResponseHelper.error('Failed to fetch course', 500);
         }
     }
+
+    // Fetch course categories
+    async fetchCourseCategories(courseId) {
+        const course = await this.repository.fetchCourseCategories(courseId);
+
+        if (!course || !course.categories) {
+            throw new Error('Course or categories not found');
+        }
+
+        return course.categories.map(cat => cat.category.id);
+    }
+
+
+    async fetchRelatedCourses(courseId) {
+        try {
+            // Fetch course categories first
+            const categoryIds = await this.repository.fetchCourseCategoryIds(courseId);
+            console.log("this is the category id ", categoryIds);
+
+            // Fetch related courses based on these categories
+            const relatedCourses = await this.repository.fetchRelatedCoursesByCategory(categoryIds, courseId);
+
+            // If no related courses found, return an error response
+            if (!relatedCourses || relatedCourses.length === 0) {
+                return ResponseHelper.error('Related courses not found', 404);
+            }
+
+
+            // Transform the data to include calculated fields
+            const transformedCourses = relatedCourses.map(course => {
+                // Calculate total course hours from video durations (in seconds)
+                const totalSeconds = course.sections.reduce((sum, section) => {
+                    return sum + section.videos.reduce((sectionSum, video) => {
+                        return sectionSum + (video.duration || 0);
+                    }, 0);
+                }, 0);
+
+                const totalHours = (totalSeconds / 3600).toFixed(1); // Convert to hours
+
+                return {
+                    id: course.id,
+                    title: course.title,
+                    thumbnailUrl: course.thumbnailUrl,
+                    totalHours,
+                    difficultyLevel: course.difficultyLevel,
+                    averageRating: course.averageRating,
+                    categoryId: course.categories[0]?.category.id,
+                    categoryName: course.categories[0]?.category.name,
+                    totalReviews: course.totalReviews,
+                    instructorId: course.instructorId,
+                    instructorName: "Mohamed Ali", // Temporary - replace with actual instructor data
+                    instructorPicture: "temp-url-here" // Temporary - replace with actual instructor data
+                };
+            });
+
+            // Return success response with the transformed courses
+            return ResponseHelper.success('Related courses fetched successfully', transformedCourses);
+        } catch (error) {
+            console.error("Error fetching related courses:", error);
+            return ResponseHelper.error('Failed to fetch related courses', 500);
+        }
+    }
+
+
 
 
 

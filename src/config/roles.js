@@ -1,6 +1,6 @@
 const ROLES = Object.freeze({
-    ADMIN: "admin",
-    INSTRUCTOR: "instructor",
-    STUDENT: "student",
+    ADMIN: "ADMIN",
+    INSTRUCTOR: "INSTRUCTOR",
+    STUDENT: "STUDENT",
 });
 export default ROLES;
