@@ -150,16 +150,32 @@ router.get('/courses/draft-courses/:id', async (req, res, next) => {
 
 
 
-router.get('/courses/production/:courseId', async (req, res, next) => {
+
+router.post('/courses/getFilterCoursesPaginated', async (req, res, next) => {
     try {
-        const { courseId } = req.params;
-        const userId = getUserId(req.auth);
-        const currentRole = getCurrentRole(req.auth);
-        console.log("the user id is ", userId);
-        console.log("Fetching production course with id :", courseId);
-        console.log("this is the current user role ", currentRole);
-        const course = await service.FetchCourseProductionById(courseId, userId, currentRole);
-        res.status(200).json(course);
+        const paginationParams = req.body;
+        console.log("this is the paginatoin params ", paginationParams)
+        const page = parseInt(paginationParams.page, 10);
+        const limit = parseInt(paginationParams.limit, 10);
+        const categoriesArray = paginationParams.categories;
+        const levelsArray = paginationParams.levels;
+        const rating = paginationParams.rating;
+        const sortByPoliciy = paginationParams.sortBy;
+        console.log("this is the page params ", page)
+        console.log("this is the limit params ", limit)
+        console.log("this is the categories params ", categoriesArray)
+        console.log("this is the levels params ", levelsArray)
+        console.log("this is the rating params ", rating)
+        console.log("this is the sortBy params ", sortByPoliciy)
+        if (isNaN(page) || isNaN(limit)) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+        if (!categoriesArray || !levelsArray || !sortByPoliciy) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+        const courses = await service.getFilterCoursesPaginated(page, limit, categoriesArray, levelsArray, rating, sortByPoliciy);
+        res.status(200).json(courses);
     } catch (err) {
         next(err);
     }

@@ -39,6 +39,61 @@ class CourseService {
     }
 
 
+
+    async getFilterCoursesPaginated(
+        page,
+        limit,
+        categoriesArray,
+        levelsArray,
+        rating,
+        sortByPolicy
+    ) {
+        try {
+            // Validate inputs
+            if (page < 1) throw new Error('Page must be at least 1');
+            if (limit < 1) throw new Error('Limit must be at least 1');
+
+            // Normalize sort policy
+            const validSortPolicies = ['Newest', 'Oldest'];
+            const normalizedSortPolicy = validSortPolicies.includes(sortByPolicy)
+                ? sortByPolicy
+                : 'Newest';
+
+            // Get data from repository
+            const result = await this.repository.getFilterCoursesPaginated(
+                page,
+                limit,
+                categoriesArray,
+                levelsArray,
+                rating,
+                normalizedSortPolicy
+            );
+
+            if (result.data.length === 0) {
+                return ResponseHelper.success("No courses found matching the criteria", {
+                    courses: [],
+                    pagination: result.pagination
+                });
+            }
+
+            // Transform data if needed (e.g., map to DTOs)
+            const transformedCourses = result.data.map(course => ({
+                ...course,
+                // Add any transformations here
+            }));
+
+            return ResponseHelper.success("Courses fetched successfully", {
+                courses: transformedCourses,
+                pagination: result.pagination
+            });
+        } catch (error) {
+            console.error("Error fetching filtered courses:", error);
+            return ResponseHelper.error('Failed to fetch filtered courses', 500);
+        }
+    }
+
+
+
     async FetchCourseProductionById(courseId, userId, currentRole) {
         try {
             let course;

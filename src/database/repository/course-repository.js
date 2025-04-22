@@ -227,6 +227,93 @@ class CourseRepository {
 
 
 
+    async getFilterCoursesPaginated(
+        page,
+        limit,
+        categoriesArray,
+        levelsArray,
+        rating,
+        sortByPolicy
+    ) {
+        // Calculate skip for pagination
+        const skip = (page - 1) * limit;
+
+        // Build the base query with soft delete check
+        const baseQuery = {
+            deletedAt: null,
+        };
+
+        // Add category filter if categories are specified
+        if (categoriesArray.length > 0) {
+            baseQuery.categories = {
+                some: {
+                    categoryId: {
+                        in: categoriesArray,
+                    },
+                },
+            };
+        }
+
+        // Add difficulty level filter if levels are specified
+        if (levelsArray.length > 0) {
+            baseQuery.difficultyLevel = {
+                in: levelsArray,
+            };
+        }
+
+        // Add rating filter if specified
+        if (rating !== null) {
+            baseQuery.averageRating = {
+                gte: rating,
+            };
+        }
+
+        // Determine sorting order
+        let orderBy = {};
+        switch (sortByPolicy) {
+            case 'Newest':
+                orderBy = { createdAt: 'desc' };
+                break;
+            case 'Oldest':
+                orderBy = { createdAt: 'asc' };
+                break;
+            // Add more sorting options as needed
+            default:
+                orderBy = { createdAt: 'desc' }; // Default to newest
+        }
+
+        // Execute the query with pagination
+        const [courses, totalCount] = await Promise.all([
+            this.prisma.course.findMany({
+                where: baseQuery,
+                skip,
+                take: limit,
+                orderBy,
+                include: {
+                    categories: {
+                        include: {
+                            category: true,
+                        },
+                    },
+                    statistics: true,
+                },
+            }),
+            this.prisma.course.count({
+                where: baseQuery,
+            }),
+        ]);
+
+        return {
+            data: courses,
+            pagination: {
+                total: totalCount,
+                totalPages: Math.ceil(totalCount / limit),
+                currentPage: page,
+                limit,
+            },
+        };
+    }
+
 
 
     async getLandingPageCourses(filter, limit = 10) {
