@@ -1,3 +1,5 @@
+
+
 import { PrismaClient, Prisma } from '@prisma/client'; // Import Prisma Client and Prisma errors
 import upload from '../../../middleware/upload.js';
 import { checkAuth } from '../../../middleware/auth/checkAuth.js';
@@ -66,6 +68,7 @@ router.post('/courses/getLandingPageCourses',
     }
 );
 
+
 router.post('/courses/create-course-template',
     upload.single('thumbnail'),
     async (req, res, next) => {
@@ -88,6 +91,22 @@ router.post('/courses/create-course-template',
     }
 );
 
+
+router.get('/courses/production/:courseId', async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const userId = getUserId(req.auth);
+        const userRole = getCurrentRole(req.auth);
+        console.log("this is the user id  ", userId);
+        console.log("this is the user role  ", userRole);
+        console.log("this is the course id  ", courseId);
+
+        const course = await service.FetchCourseProductionById(courseId, userId, userRole);
+        res.status(200).json(course);
+    } catch (err) {
+        next(err);
+    }
+});
 
 
 router.put('/courses/:courseId/thumbnail-upload',
