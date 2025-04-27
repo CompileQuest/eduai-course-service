@@ -1,5 +1,5 @@
 import { ForbiddenError, UnauthorizedError } from '../../utils/app-errors.js';
-const mock = false;
+const mock = true;
 const checkRole = (requiredRoles = []) => {
     return (req, res, next) => {
 
@@ -25,10 +25,15 @@ const checkRole = (requiredRoles = []) => {
     };
 };
 
-const getUserId = (auth) => {
-    if (mock) {
+const getUserId = (auth, Role) => {
+    if (mock && Role === 'STUDENT') {
         return 'asdfa2342fasrq23fwe234fasd';
     }
+
+    if (mock && Role === 'INSTRUCTOR') {
+        return 'c1243e05-49f2-4931-9d73-f77a049a5935';
+    }
+
     if (!auth || !auth.sub) {
         console.warn("Missing user ID in authentication data");
         return null;

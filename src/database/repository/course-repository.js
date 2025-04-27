@@ -38,6 +38,86 @@ class CourseRepository {
     }
 
 
+    async findCourseById(courseId) {
+        return this.prisma.course.findUnique({
+            where: { id: courseId },
+            include: {
+                categories: {
+                    include: {
+                        category: true
+                    }
+                },
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            }
+        });
+    }
+
+    async updateCourse(courseId, updateData) {
+        // Handle category updates if present
+        console.log("1");
+        if (updateData.category_id) {
+            await this.prisma.courseCategory.deleteMany({
+                where: { courseId }
+            });
+
+            await this.prisma.courseCategory.create({
+                data: {
+                    courseId,
+                    categoryId: updateData.category_id
+                }
+            });
+
+            // Remove from updateData to avoid Prisma error
+            delete updateData.category_id;
+        }
+
+
+        console.log("2");
+
+        // Handle tags updates if present
+        if (updateData.tags) {
+            await this.prisma.courseTags.deleteMany({
+                where: { courseId }
+            });
+
+            await this.prisma.courseTags.createMany({
+                data: updateData.tags.map(tagId => ({
+                    courseId,
+                    tagId
+                }))
+            });
+
+            delete updateData.tags;
+        }
+        console.log("3");
+        // Update the course itself
+        return this.prisma.course.update({
+            where: { id: courseId },
+            data: {
+                ...updateData,
+                updatedAt: new Date() // Always update the timestamp
+            },
+            include: {
+                categories: {
+                    include: {
+                        category: true
+                    }
+                },
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                }
+            }
+        });
+    }
+
+
+
     async FetchCourseById(courseId) {
         try {
             const course = await this.prisma.course.findUnique({
@@ -441,49 +521,43 @@ class CourseRepository {
     }
 
     async CreateCourseTemplate(courseData) {
-        try {
-            // First, create the course
-            const course = await this.prisma.course.create({
-                data: {
-                    title: courseData.title,
-                    thumbnailUrl: null,  // Will be updated later
-                    shortDescription: courseData.short_description,
-                    description: courseData.description,
-                    WhatWillYouLearn: courseData.what_you_will_learn,
-                    requirements: courseData.requirements,
-                    difficultyLevel: courseData.level,
-                    price: courseData.price,
-                    status: 'draft',
-                    // Create the category connection
-                    categories: {
-                        create: {
-                            categoryId: courseData.category_id
-                        }
+        // First, create the course
+        const course = await this.prisma.course.create({
+            data: {
+                title: courseData.title,
+                thumbnailUrl: null,  // Will be updated later
+                shortDescription: courseData.short_description,
+                description: courseData.description,
+                WhatWillYouLearn: courseData.what_you_will_learn,
+                requirements: courseData.requirements,
+                difficultyLevel: courseData.level,
+                price: courseData.price,
+                status: 'draft',
+                instructorId: courseData.instructorId,
+                // Create the category connection
+                categories: {
+                    create: {
+                        categoryId: courseData.category_id
                     }
                 }
-            });
-
-            // Then create sections if they exist
-            if (courseData.sections && courseData.sections.length > 0) {
-                await this.prisma.section.createMany({
-                    data: courseData.sections.map((section, index) => ({
-                        courseId: course.id,
-                        sectionTitle: section.title,
-                        order: index + 1
-                    }))
-                });
             }
+        });
 
-            return course;
-        } catch (error) {
-            console.error("Repository Error:", error);
-            throw new AppError(
-                "Unable to Create Course Template",
-                error.statusCode || 500,
-                error.message
-            );
+        // Then create sections if they exist
+        if (courseData.sections && courseData.sections.length > 0) {
+            await this.prisma.section.createMany({
+                data: courseData.sections.map((section, index) => ({
+                    courseId: course.id,
+                    sectionTitle: section.title,
+                    order: index + 1
+                }))
+            });
         }
+
+        return course;
     }
+
+
 
     async UpdateCourseTemplate(courseId, imageData) {
         try {

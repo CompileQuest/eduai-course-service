@@ -1,7 +1,7 @@
 import { expressjwt as jwt } from "express-jwt";
 import jwksRsa from "jwks-rsa";
 import { UnauthorizedError, ForbiddenError, BadRequestError } from "../../utils/app-errors.js"; // Import custom error classes
-const mock = false;
+const mock = true;
 // Function to extract JWT from request
 const getTokenFromRequest = (req) => {
     const authHeader = req.headers.authorization;
@@ -19,8 +19,11 @@ const getTokenFromRequest = (req) => {
 };
 
 
-// JWT Authentication Middleware
 const checkAuth = (req, res, next) => {
+    console.log("Checking authentication...");
+    if (mock) {
+        next(); // Make sure to return to avoid further execution
+    }
 
     jwt({
         secret: jwksRsa.expressJwtSecret({
@@ -35,6 +38,7 @@ const checkAuth = (req, res, next) => {
         getToken: getTokenFromRequest,
     })(req, res, (err) => {
         if (err) {
+            // Handle different errors appropriately
             if (err.name === "UnauthorizedError") {
                 console.log("we are here ");
                 return next(new UnauthorizedError("Invalid authentication token"));
@@ -47,8 +51,10 @@ const checkAuth = (req, res, next) => {
             }
             return next(new UnauthorizedError("Authentication failed"));
         }
+        // If no error, continue to the next middleware or route handler
         next();
     });
 };
+
 
 export { checkAuth };

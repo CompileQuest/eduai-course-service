@@ -222,6 +222,62 @@ class CourseService {
 
 
 
+    async updateCourse(instructorId, courseId, data) {
+        try {
+            // Input validation
+            if (!data) {
+                throw new APIError('Course data is required', 400);
+            }
+
+            // Fetch existing course (repository call)
+            const existingCourse = await this.repository.findCourseById(courseId);
+            if (!existingCourse) {
+                throw new APIError('Course not found', 404);
+            }
+
+            // Authorization check
+            if (existingCourse.instructorId !== instructorId) {
+                throw new APIError('Unauthorized to edit this course', 403);
+            }
+
+            // Data transformation
+            const updateData = {
+                title: data.title,
+                shortDescription: data.shortDescription,
+                description: data.description,
+                whatYouWillLearn: data.whatYouWillLearn,
+                requirements: data.requirements,
+                category: data.category,
+                level: data.level,
+                price: parseFloat(data.price),
+            };
+
+            // Core update (repository call)
+            const updatedCourse = await this.repository.updateCourse(courseId, updateData);
+            console.log("Updated course data:", updatedCourse);
+            if (!updatedCourse) {
+                throw new APIError('Failed to update course');
+            }
+
+            return updatedCourse;
+
+        } catch (error) {
+            // Special handling for Prisma errors
+
+
+            // Re-throw our custom errors
+            if (error instanceof APIError) {
+                throw error;
+            }
+
+            // Log and wrap unexpected errors
+            console.error('Course update failed:', error);
+            throw new APIError('Failed to update course', 500, error.message);
+        }
+    }
+
+
+
 
 
 
@@ -301,27 +357,23 @@ class CourseService {
         return await this.repository.DeleteCourseTemplate(courseId);
     }
 
-    async UpdateCourse(courseId, updates) {
-        return await this.repository.UpdateCourseById(courseId, updates);
-    }
 
     async FetchCategories() {
         return await this.repository.FetchCategories();
     }
 
-    async createCourseTemplate(data, image) {
+    async createCourseTemplate(data, image, instructorId) {
         try {
             if (!data) {
                 throw new APIError('Course data is required', 400);
             }
 
-            if (!image) {
-                throw new APIError('Course thumbnail image is required', 400);
-            }
+
 
             // Transform the data to match schema
             const courseTemplateData = {
                 title: data.title,
+                instructorId: instructorId,
                 short_description: data.shortDescription,
                 description: data.description,
                 what_you_will_learn: data.whatYouWillLearn,
@@ -335,9 +387,24 @@ class CourseService {
             // Create course template
             const courseTemplate = await this.repository.CreateCourseTemplate(courseTemplateData);
 
+            if (!courseTemplate) {
+                throw new APIError('Failed to create course template', 400);
+            }
+
+
+            // 
+            if (!image) {
+                throw new APIError('Course Created But problem with thumbnail image not uploaded!!', 400);
+            }
+
             try {
                 // Upload image to cloudinary
-                const imageUrl = await uploadImage(image.buffer, `courses/${courseTemplate.id}/thumbnail`);
+                const imageUrl = await uploadImage(
+                    image.buffer,
+                    `courses/${courseTemplate.id}/thumbnail`,
+                    `${courseTemplate.id}-thumbnail-image`
+                );
+
 
                 const imageData = {
                     url: imageUrl.url,
@@ -692,7 +759,10 @@ class CourseService {
             }
 
             console.log("video is saved !!!!")
-            return ResponseHelper.success("Video is deleted successfully!");
+
+
+            return ResponseHelper.success("Video is saved successfully!");
+
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;

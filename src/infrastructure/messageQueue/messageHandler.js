@@ -40,6 +40,7 @@ class MessageHandler {
 
                 await this.courseService.SaveVideoToSection(payload);
                 console.log("✅ Video successfully saved to the section.");
+
             }
             else if (payload.resource_type === "raw") {
                 console.log("📂 File uploaded:", payload.original_filename);

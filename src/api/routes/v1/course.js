@@ -5,7 +5,7 @@ import upload from '../../../middleware/upload.js';
 import { checkAuth } from '../../../middleware/auth/checkAuth.js';
 import CourseService from '../../../services/course-service.js';
 import tokenManipulator from "../../../middleware/tokenManipulator.js";
-import { BadRequestError } from '../../../utils/app-errors.js'; // Change this import
+import { BadRequestError, STATUS_CODES } from '../../../utils/app-errors.js'; // Change this import
 import express from 'express';
 import { ServerDescriptionChangedEvent } from 'mongodb';
 import { checkRole, getUserId, getCurrentRole } from '../../../middleware/auth/authHelper.js';
@@ -71,25 +71,66 @@ router.post('/courses/getLandingPageCourses',
 
 router.post('/courses/create-course-template',
     upload.single('thumbnail'),
+    checkAuth,
+    checkRole([roles.INSTRUCTOR]),
     async (req, res, next) => {
         try {
             // Now you can access the authenticated user via req.user
             console.log('Authenticated user:', req.user);
             console.log('Request body:', req.body);
             console.log('Uploaded file:', req.file);
-
+            const instructorId = getUserId(req.auth, 'INSTRUCTOR');
+            console.log("this is the instructor id  ", instructorId);
             const form = req.body
             const image = req.file;
 
-            const courseTemplate = await service.createCourseTemplate(form, image);
+            const courseTemplate = await service.createCourseTemplate(form, image, instructorId);
             console.log("courseTemplate done");
-            res.status(201).json(courseTemplate);
+            res.status(201).json({
+                sucess: true,
+                message: "Course template created successfully",
+                courseTemplate: courseTemplate
+            });
 
         } catch (err) {
             next(err);
         }
     }
 );
+
+router.put('/edit-course/:courseId',
+    upload.single('thumbnail'),
+    checkAuth,
+    checkRole([roles.INSTRUCTOR]),
+    async (req, res, next) => {
+        try {
+            // Access the authenticated user via req.user
+            console.log('Authenticated user:', req.user);
+            console.log('Request body:', req.body);
+            console.log('Uploaded file:', req.file);
+
+            const instructorId = getUserId(req.auth, 'INSTRUCTOR');
+            console.log("Instructor ID:", instructorId);
+
+            const { courseId } = req.params; // Get courseId from the route parameter
+            const form = req.body;
+
+            // Call the service method to update the course template
+            const updatedCourseTemplate = await service.updateCourse(instructorId, courseId, form);
+            console.log("Course template updated");
+
+            // Respond with the updated course template
+            res.status(200).json({
+                success: true,
+                message: "Course template updated successfully",
+                courseTemplate: updatedCourseTemplate
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+);
+
 
 
 router.get('/courses/production/:courseId', async (req, res, next) => {
@@ -131,7 +172,7 @@ router.get('/instructor-courses', async (req, res, next) => {
         //console.log("the user id is ", tempUserId);
         const page = parseInt(req.query.page, 10);
         const limit = parseInt(req.query.limit, 10);
-        const instructorId = 'uuid_here_of_instructor_test';
+        const instructorId = getUserId(req.auth, 'INSTRUCTOR');
         if (isNaN(page) || isNaN(limit)) {
             throw new BadRequestError("Invalid or missing inputs field");
         }

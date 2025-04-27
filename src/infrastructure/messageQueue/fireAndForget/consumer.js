@@ -17,13 +17,27 @@ class Consumer {
                         // Parse the message
                         const parsedMessage = this.parseMessage(msg.content.toString());
 
-                        // Process the message using MessageHandler
                         if (parsedMessage) {
-                            this.messageHandler.handleMessage(parsedMessage.type, parsedMessage.payload);
-                        }
+                            try {
+                                // Process the message using MessageHandler
+                                const result = await this.messageHandler.handleMessage(parsedMessage.type, parsedMessage.payload);
 
-                        // Acknowledge the message (deletes it from the queue)
-                        this.channel.ack(msg);
+                                // If the message processed successfully, acknowledge it
+                                if (result && result.success) {
+                                    this.channel.ack(msg);
+                                    console.log(`✅ Successfully processed and acknowledged message from ${queue}`);
+                                } else {
+                                    console.error(`❌ Failed processing message from ${queue}, not acknowledging.`, result);
+                                    // Optionally: You could send it to a dead-letter queue here if needed
+                                }
+                            } catch (processingError) {
+                                console.error(`🔥 Error while handling message from ${queue}:`, processingError);
+                                // Don't acknowledge on processing error
+                            }
+                        } else {
+                            console.error(`❌ Failed to parse message from ${queue}, not acknowledging.`);
+                            // Optional: you can also nack or move to a dead-letter queue
+                        }
                     }
                 });
             }
@@ -31,6 +45,7 @@ class Consumer {
             console.error("Error consuming messages:", error);
         }
     }
+
 
     async consumeTest() {
         try {
