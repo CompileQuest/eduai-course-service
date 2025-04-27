@@ -1,8 +1,11 @@
 import { ForbiddenError, UnauthorizedError } from '../../utils/app-errors.js';
-const mock = true;
+const mock = false;
 const checkRole = (requiredRoles = []) => {
     return (req, res, next) => {
 
+        if (mock) {
+            return 'STUDENT';
+        }
 
         if (!req.auth) {
             return next(new UnauthorizedError("No authentication data found"));

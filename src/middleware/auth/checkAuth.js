@@ -1,7 +1,7 @@
 import { expressjwt as jwt } from "express-jwt";
 import jwksRsa from "jwks-rsa";
 import { UnauthorizedError, ForbiddenError, BadRequestError } from "../../utils/app-errors.js"; // Import custom error classes
-const mock = true;
+const mock = false;
 // Function to extract JWT from request
 const getTokenFromRequest = (req) => {
     const authHeader = req.headers.authorization;
