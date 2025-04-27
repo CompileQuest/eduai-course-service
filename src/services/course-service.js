@@ -274,6 +274,29 @@ class CourseService {
         }
     }
 
+
+    async courseCartInfo(courseIdArray) {
+        try {
+            // Call the repository function to fetch course details
+            const courseInfo = await this.repository.courseCartInfo(courseIdArray);
+
+            // If no courses were found, throw an error
+            if (!courseInfo || courseInfo.length === 0) {
+                throw new NotFoundError("Courses not found", "No courses were found for the provided IDs.");
+            }
+
+            // Return the course info
+            return courseInfo;
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;  // If the error is an instance of AppError, rethrow it
+            }
+
+            throw new InternalServerError("An error occurred while fetching course info", error.message);
+        }
+    }
+
+
     async DeleteCourseById(courseId) {
         return await this.repository.DeleteCourseTemplate(courseId);
     }
@@ -335,14 +358,12 @@ class CourseService {
                 await this.repository.DeleteCourseTemplate(courseTemplate.id);
                 throw new APIError(
                     'Failed to upload course thumbnail',
-                    error.statusCode || 500,
                     error.message
                 );
             }
         } catch (error) {
             throw new APIError(
                 'Failed to create course template',
-                error.statusCode || 500,
                 error.message
             );
         }

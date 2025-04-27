@@ -19,6 +19,25 @@ class CourseRepository {
     }
 
 
+
+    async courseCartInfo(courseIdArray) {
+        // Fetch courses by courseIds and select only necessary fields
+        return await prisma.course.findMany({
+            where: {
+                id: {
+                    in: courseIdArray,  // Match courses whose ID is in the provided array
+                }
+            },
+            select: {
+                id: true,
+                title: true,
+                thumbnailUrl: true,
+                price: true,
+            },
+        });
+    }
+
+
     async FetchCourseById(courseId) {
         try {
             const course = await this.prisma.course.findUnique({
