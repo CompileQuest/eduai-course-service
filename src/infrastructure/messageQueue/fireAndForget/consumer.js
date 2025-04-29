@@ -28,6 +28,8 @@ class Consumer {
                                     console.log(`✅ Successfully processed and acknowledged message from ${queue}`);
                                 } else {
                                     console.error(`❌ Failed processing message from ${queue}, not acknowledging.`, result);
+                                    this.channel.nack(msg, false, false); // Without DLX configured
+
                                     // Optionally: You could send it to a dead-letter queue here if needed
                                 }
                             } catch (processingError) {

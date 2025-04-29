@@ -31,10 +31,12 @@ router.get('/signed-upload-url-video', async (req, res, next) => {
 
 // Updated route to get Cloudinary signed URL using the service layer
 router.get('/signed-upload-url-file', async (req, res, next) => {
-    const { courseId, sectionId, isFree } = req.query; // Extract title from req.query
+    const { courseId, sectionId, isFree, fileType } = req.query; // Extract title from req.query
     console.log("this is the course id ", courseId);
     console.log("this is the section id ", sectionId);
     console.log("this is the isFree ", isFree);
+    console.log("this is the file type ", fileType);
+
     try {
         // Simple validation using your custom error handling
         if (!courseId || !sectionId || !isFree) {
@@ -42,7 +44,7 @@ router.get('/signed-upload-url-file', async (req, res, next) => {
         }
 
         // move the cloudinary to course service and make it accessible from there and do check like owner ships and all !!
-        const result = await service.generateSignedUploadUrlFile(courseId, sectionId, isFree); // Pass title to the service method
+        const result = await service.generateSignedUploadUrlFile(courseId, sectionId, isFree, fileType); // Pass title to the service method
         res.status(200).json({ message: "Signed URL generated successfully", result });
     } catch (err) {
         next(err);

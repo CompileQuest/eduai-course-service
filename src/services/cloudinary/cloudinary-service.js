@@ -1,6 +1,12 @@
 import { cloudinary } from '../../config/cloudinary.js';
-
+import CourseRepository from '../../database/repository/course-repository.js';
+import { APIError, AppError } from '../../utils/app-errors.js';
+import courseService from '../course-service.js';
 class CloudinaryService {
+
+    constructor() {
+        this.courseService = new courseService();
+    }
 
     //done
     async generateSignedUploadUrlVideo(courseId, sectionId, title, isFree) {
@@ -39,10 +45,25 @@ class CloudinaryService {
     }
 
 
-    async generateSignedUploadUrlFile(courseId, sectionId, isFree) {
+    async generateSignedUploadUrlFile(courseId, sectionId, isFree, fileType) {
         try {
+
+            // check if the file type is text which means a quiz file 
+            if (fileType == 'text/plain') {
+                const quizFileExist = await this.courseService.checkIfQuizFileExist(courseId, sectionId);
+                if (quizFileExist) {
+                    console.log("this is the status ", quizFileExist)
+                    throw new APIError("There is already a quiz file here !!");
+                }
+
+            }
+
+            console.log("i am here !!")
             const folderPath = `courses/${courseId}/files`;
             const timestamp = Math.round(new Date().getTime() / 1000);
+
+
+
 
             // Prepare the context string from title,courseid,sectoinid !!
             const context = `isFree=${isFree}|courseId=${courseId}|sectionId=${sectionId}|isFree=${isFree}`;
@@ -65,6 +86,9 @@ class CloudinaryService {
                 context: context, // Return context to the frontend
             };
         } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             console.error("Error generating signed URL:", error);
             throw new Error("Could not generate signed URL");
         }

@@ -38,6 +38,8 @@ class RabbitMQClient {
             this.producerChannel = await this.connection.createChannel();
             this.consumerChannel = await this.connection.createChannel();
 
+
+
             // Assert the current service's exchange and queue
             await this.consumerChannel.assertExchange(config.rabbitMQ.exchange, 'topic', { durable: true });
             await this.consumerChannel.assertQueue(config.rabbitMQ.queue, { durable: true });

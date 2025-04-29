@@ -40,6 +40,22 @@ class CourseService {
 
 
 
+    async checkIfQuizFileExist(courseId, sectionId) {
+        try {
+            const quizFiles = await this.repository.checkIfQuizFileExist(courseId, sectionId);
+            console.log("this si the quiz file ", quizFiles);
+            if (!quizFiles || quizFiles.length === 0) {
+                console.log("in here !!!")
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            throw new APIError("something went wrong checking the quiz file exist or not !!");
+        }
+    }
+
+
     async getFilterCoursesPaginated(
         page,
         limit,

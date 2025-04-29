@@ -20,6 +20,24 @@ class CourseRepository {
 
 
 
+    async checkIfQuizFileExist(courseId, sectionId) {
+        const quizFile = await prisma.file.findMany({
+            where: {
+                section: {
+                    courseId: courseId, // make sure section.course_id matches
+                    id: sectionId       // and section.id matches
+                },
+                format: null,
+                public_id: {
+                    endsWith: '.txt',
+                },
+            },
+        });
+
+        return quizFile;
+    }
+
+
     async courseCartInfo(courseIdArray) {
         // Fetch courses by courseIds and select only necessary fields
         return await prisma.course.findMany({
