@@ -32,10 +32,12 @@ router.get('/signed-upload-url-video', async (req, res, next) => {
 // Updated route to get Cloudinary signed URL using the service layer
 router.get('/signed-upload-url-file', async (req, res, next) => {
     const { courseId, sectionId, isFree } = req.query; // Extract title from req.query
-    const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
+    console.log("this is the course id ", courseId);
+    console.log("this is the section id ", sectionId);
+    console.log("this is the isFree ", isFree);
     try {
         // Simple validation using your custom error handling
-        if (!courseId || !sectionId || !instructorId || !isFree) {
+        if (!courseId || !sectionId || !isFree) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 

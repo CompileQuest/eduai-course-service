@@ -35,24 +35,31 @@ class MessageHandler {
                 return { success: false, error: "Invalid payload structure", payload };
             }
 
-            if (payload.resource_type === "video") {
+            const { resource_type, format } = payload;
+
+            if (resource_type === "video") {
                 console.log("🎥 Video uploaded:", payload.original_filename);
 
                 await this.courseService.SaveVideoToSection(payload);
                 console.log("✅ Video successfully saved to the section.");
 
-            }
-            else if (payload.resource_type === "raw") {
-                console.log("📂 File uploaded:", payload.original_filename);
-                console.log("THIS IS THE FILE CONTENT ", payload);
+            } else if (resource_type === "raw") {
+                console.log("📂 Raw file uploaded:", payload.original_filename);
                 await this.courseService.SaveFileToSection(payload);
-                console.log("📂 File saved :", payload.original_filename);
+                console.log("✅ Raw file saved:", payload.original_filename);
 
+            } else if (resource_type === "image" && format === "pdf") {
+                console.log("📄 PDF uploaded as image:", payload.original_filename);
+                await this.courseService.SaveFileToSection(payload); // same as raw files
+                console.log("✅ PDF file saved:", payload.original_filename);
 
+            } else if (resource_type === "image") {
+                console.log("🖼️ Image uploaded:", payload.original_filename);
+                await this.courseService.SaveImageToSection(payload);
+                console.log("✅ Image successfully saved to the section.");
 
-            }
-            else {
-                console.warn(`⚠️ Unsupported resource type: ${payload.resource_type}`);
+            } else {
+                console.warn(`⚠️ Unsupported resource type: ${resource_type}`);
                 return { success: false, error: "Unsupported resource type", payload };
             }
 
@@ -63,6 +70,7 @@ class MessageHandler {
             return { success: false, error: "Internal server error", details: error.message };
         }
     }
+
 
     async handleUserUpdated(payload) {
         console.log("Processing user_updated message:", payload);

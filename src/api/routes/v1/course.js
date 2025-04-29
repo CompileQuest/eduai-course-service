@@ -2,14 +2,16 @@
 
 import { PrismaClient, Prisma } from '@prisma/client'; // Import Prisma Client and Prisma errors
 import upload from '../../../middleware/upload.js';
-import { checkAuth } from '../../../middleware/auth/checkAuth.js';
+
 import CourseService from '../../../services/course-service.js';
 import tokenManipulator from "../../../middleware/tokenManipulator.js";
 import { BadRequestError, STATUS_CODES } from '../../../utils/app-errors.js'; // Change this import
 import express from 'express';
 import { ServerDescriptionChangedEvent } from 'mongodb';
-import { checkRole, getUserId, getCurrentRole } from '../../../middleware/auth/authHelper.js';
+import { checkRole, getUserId, getCurrentRole, checkAuth } from '../../../middleware/auth/authHelper.js';
 import roles from '../../../config/roles.js';
+import ROLES from '../../../config/roles.js';
+import { check } from 'prisma';
 
 const prisma = new PrismaClient(); // Instantiate Prisma Client
 const service = new CourseService();
@@ -242,11 +244,11 @@ router.post('/courses/getFilterCoursesPaginated', async (req, res, next) => {
 });
 
 
-router.get('/courses/:id/content', async (req, res, next) => {
+router.get('/:courseId/content', async (req, res, next) => {
     try {
-        const { id } = req.params;
-        console.log("Fetching course content with id:", id);
-        const courseContent = await service.FetchCourseContentById(id);
+        const { courseId } = req.params;
+        console.log("Fetching course content with id:", courseId);
+        const courseContent = await service.FetchCourseContentById(courseId);
         res.status(200).json(courseContent);
     } catch (err) {
         //    console.log("form api layer");
@@ -329,15 +331,16 @@ router.get('/:cousreId/preview', async (req, res, next) => {
 });
 
 
-router.delete('/:courseId/deleteSection', async (req, res, next) => {
+router.delete('/:courseId/deleteSection', checkAuth, checkRole([ROLES.ADMIN, ROLES.INSTRUCTOR]), async (req, res, next) => {
     try {
         const { courseId } = req.params;
         const { sectionId } = req.query; // Get sectionId from query parameters
-        const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
+        const instructorId = getUserId(req.auth, 'INSTRUCTOR'); // Get instructorId from the request
 
-        console.log(courseId);
-        console.log(sectionId);
-        console.log("i am called here the deltee ");
+        console.log("this is the course id ", courseId);
+        console.log("this is the section id ", sectionId);
+        console.log("this is the instructor id ", instructorId);
+
 
         if (!courseId || !sectionId || !instructorId) {
             throw new BadRequestError("Invalid or missing inputs field");
@@ -356,7 +359,8 @@ router.put('/:courseId/editSection', async (req, res, next) => {
     try {
         const { courseId } = req.params;
         const { sectionId, title } = req.body;
-        const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
+        const instructorId = getUserId(req.auth, 'INSTRUCTOR'); // Get instructorId from the request    
+
 
         // Simple validation using your custom error handling
         if (!sectionId || !instructorId || !title) {
@@ -366,6 +370,30 @@ router.put('/:courseId/editSection', async (req, res, next) => {
         // Call the service method to delete the section
         const editedSection = await service.editSection(courseId, sectionId, instructorId, title);
         res.status(200).json(editedSection);
+    } catch (err) {
+        console.log("this is the error ", err);
+        next(err); // Passes error to centralized error handling middleware
+    }
+});
+
+
+router.get('/:courseId/getSectionFiles', checkAuth, checkRole([ROLES.INSTRUCTOR]), async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+        const instructorId = getUserId(req.auth, 'INSTRUCTOR'); // Get instructorId from the request    
+
+
+        if (!courseId || !instructorId) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+        // Call the service method to delete the section
+        const sectionFiles = await service.getSectionFiles(courseId, instructorId);
+        res.status(200).json({
+            success: true,
+            message: "Fetched  Section Files Successfuly",
+            data: sectionFiles
+        });
     } catch (err) {
         console.log("this is the error ", err);
         next(err); // Passes error to centralized error handling middleware

@@ -6,6 +6,7 @@ const bindingsConfig = {
         queue: "course_queue",
         bindings: [
             // { exchange: "user_exchange", routingKeys: [RoutingKeys.COURSE_CREATED] },
+            { exchange: "webhook_exchange", routingKeys: [RoutingKeys.CLOUDINARY_UPLOAD] },
         ],
     }
 };

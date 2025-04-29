@@ -8,6 +8,10 @@ const RoutingKeys = {
     USER_PASSWORD_RESET: "user.password_reset",
     USER_ALL_EVENTS: "user.#",
 
+
+    // Cloudinary events
+    CLOUDINARY_UPLOAD: "cloudinary.upload",
+
     // Course-related events
     COURSE_CREATED: "course.created",
     COURSE_UPDATED: "course.updated",

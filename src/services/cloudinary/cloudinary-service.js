@@ -5,6 +5,10 @@ class CloudinaryService {
     //done
     async generateSignedUploadUrlVideo(courseId, sectionId, title, isFree) {
         try {
+            console.log("this is the title", title);
+            console.log("this is the courseId", courseId);
+            console.log("this is the sectionId", sectionId);
+            console.log("this is the isFree", isFree);
             const folderPath = `courses/${courseId}/videos`;
             const timestamp = Math.round(new Date().getTime() / 1000);
 

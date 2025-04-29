@@ -22,6 +22,7 @@ const getTokenFromRequest = (req) => {
 const checkAuth = (req, res, next) => {
     console.log("Checking authentication...");
     if (mock) {
+        console.log("Mock authentication enabled");
         next(); // Make sure to return to avoid further execution
     }
 

@@ -800,6 +800,35 @@ class CourseService {
     }
 
 
+
+
+    async getSectionFiles(courseId, instructorId) {
+        try {
+            // Use the reusable validation method
+            await this._validateInstructorOwnership(courseId, instructorId);
+
+            // Fetch section files
+            const sectionFiles = await this.repository.getSectionFiles(courseId);
+
+            if (!sectionFiles) {
+                throw new NotFoundError(`No files found for course with ID ${courseId}`);
+            }
+
+
+            // Transform the data here !!!
+            return sectionFiles;
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            } else {
+                console.error("Unexpected error in fetching section files:", error);
+                throw new InternalServerError("An error occurred while fetching section files");
+            }
+        }
+    }
+
+
+
 }
 
 

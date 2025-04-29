@@ -800,6 +800,23 @@ class CourseRepository {
     }
 
 
+    async getSectionFiles(courseId) {
+        const sectionsWithFiles = await prisma.section.findMany({
+            where: {
+                courseId: courseId,
+            },
+            select: {
+                id: true,
+                sectionTitle: true,
+                files: true,
+            },
+        });
+
+        return sectionsWithFiles;
+    }
+
+
+
 
     async getCoursePreview(courseId) {
         const course = await prisma.course.findUnique({
