@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { APIError, STATUS_CODES, AppError } from '../../utils/app-errors.js';
+import { COURSE_STATUS } from '../../constants/courseStatusEnum.js';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,20 @@ class AdminRepository {
     constructor() {
         this.prisma = new PrismaClient();
     }
+
+
+
+    async publishCourse(courseId) {
+        const publishedCousre = await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                status: COURSE_STATUS.PUBLISHED, // If using enum, you can use CourseStatus.PUBLISHED
+            },
+        });
+        return publishedCousre;
+    }
+
+
 
     async getPaginatedCourses(page, limit, status) {
         console.log("this is the status ", status);

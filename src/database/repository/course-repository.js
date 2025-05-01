@@ -38,6 +38,20 @@ class CourseRepository {
     }
 
 
+
+    async publishCourse(courseid) {
+        const publishedCousre = await prisma.course.update({
+            where: { id: courseId },
+            data: {
+                status: 'PUBLISHED', // If using enum, you can use CourseStatus.PUBLISHED
+                publishedAt: new Date(), // Optional: track when it was published
+            },
+        });
+
+        return publishedCousre;
+    }
+
+
     async courseCartInfo(courseIdArray) {
         // Fetch courses by courseIds and select only necessary fields
         return await prisma.course.findMany({

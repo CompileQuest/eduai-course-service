@@ -141,15 +141,33 @@ class ServiceUnavailableError extends AppError {
     }
 }
 
+
 export {
     STATUS_CODES,
-    AppError,
-    APIError,
-    BadRequestError,
-    UnauthorizedError,
-    ForbiddenError,
-    NotFoundError,
-    ConflictError,
-    InternalServerError,
-    ServiceUnavailableError,
+
+    AppError, // Base error class — extend this to create custom errors. Not used directly.
+
+    APIError, // ❗ Use for generic internal API/server errors.
+    // Example: throw new APIError("Service failure", "Database crashed");
+
+    BadRequestError, // 🛑 Use when client sends invalid input.
+    // Example: throw new BadRequestError("Missing field", "Email is required");
+
+    UnauthorizedError, // 🔐 Use when no valid auth token is provided (unauthenticated).
+    // Example: throw new UnauthorizedError("Auth token missing");
+
+    ForbiddenError, // 🚫 Use when user is authenticated but lacks permission.
+    // Example: throw new ForbiddenError("Access denied", "Not an admin");
+
+    NotFoundError, // ❓ Use when a requested resource doesn’t exist.
+    // Example: throw new NotFoundError("Course not found", `Course ID ${id} not found`);
+
+    ConflictError, // ⚔️ Use when a resource already exists or causes a conflict.
+    // Example: throw new ConflictError("Email already in use");
+
+    InternalServerError, // 💥 Use when an unexpected internal server error occurs.
+    // Example: throw new InternalServerError("Unexpected crash", err.message);
+
+    ServiceUnavailableError, // 📴 Use when external services (DB, cache, etc.) are down.
+    // Example: throw new ServiceUnavailableError("Redis unavailable");
 };

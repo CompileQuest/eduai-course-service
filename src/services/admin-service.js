@@ -3,15 +3,21 @@ import { APIError, InternalServerError, ForbiddenError, AppError, NotFoundError 
 import { uploadImage } from './cloudinary/image-uploader.js';
 import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
 import ResponseHelper from '../utils/responseHelper.js';
+import rabbitMQClient from '../infrastructure/messageQueue/fireAndForget/RabbitMQClient.js';
+import { RoutingKeys } from '../infrastructure/messageQueue/fireAndForget/settings/routingKeys.js';
+
 
 class AdminService {
     constructor() {
         this.repository = new AdminRepository();
     }
 
+
     async getPaginatedCourses(page, limit, status) {
         try {
 
+
+            console.log(status);
             const { courses, total } = await this.repository.getPaginatedCourses(page, limit, status);
 
             if (!courses.length) {
@@ -27,6 +33,46 @@ class AdminService {
     }
 
 
+    async publishCourse(courseId) {
+        try {
+            // Validate input
+            if (!courseId) {
+                throw new BadRequestError("Course ID is required", "Missing courseId parameter");
+            }
+
+            // Update the course status to PUBLISHED
+            const publishedCourse = await this.repository.publishCourse(courseId);
+            console.log("Changed Status to PUBLISHED!!", publishedCourse);
+
+            // If course wasn't found or update failed
+            if (!publishedCourse) {
+                throw new NotFoundError(
+                    "Course not found",
+                    `No course with ID ${courseId} was updated`
+                );
+            }
+
+            // Notify other services (e.g., notification, indexing)
+            await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, publishedCourse);
+
+            return publishedCourse;
+
+        } catch (error) {
+            // Known operational errors (user-triggered)
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            // Log unexpected internal errors (optional logging service can be added here)
+            console.error("Unexpected error in publishCourse:", error);
+
+            // Throw API error with original message preserved
+            throw new APIError(
+                "Something went wrong while publishing the course",
+                error.message
+            );
+        }
+    }
 
     async getCoursesFiltered({
         searchByTitle, title,

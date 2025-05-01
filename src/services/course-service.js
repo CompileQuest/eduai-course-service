@@ -17,6 +17,29 @@ class CourseService {
 
 
 
+    async publishCourse(cousreId) {
+        try {
+
+            const courses = await this.repository.publishCourse(cousreId);
+            console.log("Courses Fetched Successfully");
+
+            // Return a success response using ResponseHelper
+            return ResponseHelper.success('Courses Fetched Successfuly', courses);
+        } catch (error) {
+            console.error("Error updating thumbnail:", error);
+
+            // Handle specific errors (e.g., image upload or DB update failures)
+            if (error instanceof SomeSpecificError) {
+                return ResponseHelper.error('Specific error message', 400);
+            }
+
+            // General error handling
+            return ResponseHelper.error('Failed to fetch courses', 500);
+        }
+    }
+
+
+
     async getLandingPageCourses(filter) {
         try {
 

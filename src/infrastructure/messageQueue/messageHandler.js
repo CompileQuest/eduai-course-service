@@ -1,35 +1,31 @@
 import CourseService from "../../services/course-service.js";
+import { RoutingKeys } from "./fireAndForget/settings/routingKeys.js";
+
 class MessageHandler {
     constructor() {
         this.courseService = new CourseService();
 
-        // Bind methods to preserve `this` context
+        // Bind handlers
         this.handleCloudinaryUpload = this.handleCloudinaryUpload.bind(this);
         this.handleUserUpdated = this.handleUserUpdated.bind(this);
         this.handlePaymentProcessed = this.handlePaymentProcessed.bind(this);
         this.handleUnknownMessage = this.handleUnknownMessage.bind(this);
 
-        // Define the mapping of message types to handler functions
         this.handlers = {
-            cloudinary_upload: this.handleCloudinaryUpload,
-            user_updated: this.handleUserUpdated,
-            payment_processed: this.handlePaymentProcessed,
-            unknown: this.handleUnknownMessage, // Explicit handler for unknown messages
+            [RoutingKeys.CLOUDINARY_UPLOAD]: this.handleCloudinaryUpload,
+            [RoutingKeys.PAYMENT_COMPLETED]: this.handlePaymentProcessed,
         };
     }
 
-    // Main method to process messages and return a response
-    async handleMessage(messageType, payload) {
-        const handler = this.handlers[messageType] || this.handlers.unknown;
-        return await handler(payload, messageType); // Pass message type for unknown cases
+    async handleMessage(type, payload) {
+        const handler = this.handlers[type] || this.handleUnknownMessage;
+        return await handler(payload, type);
     }
 
-    // Handler functions (all return a response)
-    async handleCloudinaryUpload(payload) {
+    async handleCloudinaryUpload(payload, type) {
         try {
-            console.log("📥 Received cloudinary_upload message:");
+            console.log(`📤 [${type}] Cloudinary Upload Payload:`, payload);
 
-            // Validate required fields before proceeding
             if (!payload || !payload.resource_type || !payload.original_filename) {
                 console.error("❌ Invalid payload received:", payload);
                 return { success: false, error: "Invalid payload structure", payload };
@@ -38,53 +34,36 @@ class MessageHandler {
             const { resource_type, format } = payload;
 
             if (resource_type === "video") {
-                console.log("🎥 Video uploaded:", payload.original_filename);
-
                 await this.courseService.SaveVideoToSection(payload);
-                console.log("✅ Video successfully saved to the section.");
-
-            } else if (resource_type === "raw") {
-                console.log("📂 Raw file uploaded:", payload.original_filename);
+            } else if (resource_type === "raw" || (resource_type === "image" && format === "pdf")) {
                 await this.courseService.SaveFileToSection(payload);
-                console.log("✅ Raw file saved:", payload.original_filename);
-
-            } else if (resource_type === "image" && format === "pdf") {
-                console.log("📄 PDF uploaded as image:", payload.original_filename);
-                await this.courseService.SaveFileToSection(payload); // same as raw files
-                console.log("✅ PDF file saved:", payload.original_filename);
-
             } else if (resource_type === "image") {
-                console.log("🖼️ Image uploaded:", payload.original_filename);
-                await this.courseService.SaveImageToSection(payload);
-                console.log("✅ Image successfully saved to the section.");
-
+                // await this.courseService.SaveImageToSection(payload);
             } else {
                 console.warn(`⚠️ Unsupported resource type: ${resource_type}`);
                 return { success: false, error: "Unsupported resource type", payload };
             }
 
             return { success: true, message: "Cloudinary upload processed successfully", payload };
-
         } catch (error) {
-            console.error("🔥 Error processing cloudinary_upload:", error);
+            console.error(`🔥 [${type}] Error:`, error);
             return { success: false, error: "Internal server error", details: error.message };
         }
     }
 
-
-    async handleUserUpdated(payload) {
-        console.log("Processing user_updated message:", payload);
-        return { success: true, message: "User update processed", payload };
+    async handleUserUpdated(payload, type) {
+        console.log(`👤 [${type}] User Updated:`, payload);
+        return { success: true, message: `Handled ${type}`, payload };
     }
 
-    async handlePaymentProcessed(payload) {
-        console.log("Processing payment_processed message:", payload);
-        return { success: true, message: "Payment processed successfully", payload };
+    async handlePaymentProcessed(payload, type) {
+        console.log(`💳 [${type}] Payment Processed:`, payload);
+        return { success: true, message: `Handled ${type}`, payload };
     }
 
-    async handleUnknownMessage(payload, messageType) {
-        console.warn(`Unknown message type received: ${messageType}`, payload);
-        return { success: false, message: `Unknown message type: ${messageType}`, payload };
+    async handleUnknownMessage(payload, type) {
+        console.warn(`❓ Unknown message type: ${type}`, payload);
+        return { success: false, message: `Unknown message type: ${type}`, payload };
     }
 }
 

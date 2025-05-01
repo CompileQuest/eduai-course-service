@@ -80,7 +80,7 @@ class RabbitMQClient {
         if (!this.isInitialized) {
             throw new Error("RabbitMQ client is not initialized.");
         }
-        const userCreatedMessage = new BrokerMessage(routingKey, payload);
+        const message = new BrokerMessage(routingKey, payload);
         return await this.producer.produceMessage(config.rabbitMQ.exchange, routingKey, message);
     }
 }

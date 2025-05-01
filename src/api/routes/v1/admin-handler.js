@@ -26,6 +26,26 @@ router.get('/courses', async (req, res, next) => {
 });
 
 
+router.post('/publishCourse/:courseId', async (req, res, next) => {
+    try {
+        const { courseId } = req.params;
+
+        // Simple validation using your custom error handling
+        if (!courseId) {
+            throw new BadRequestError("Invalid or missing inputs field");
+        }
+
+
+        // Call the service method to delete the section
+        const sectionWithCourses = await adminService.publishCourse(courseId);
+        res.status(200).json(sectionWithCourses);
+    } catch (err) {
+        console.log("this is the error ", err);
+        next(err); // Passes error to centralized error handling middleware
+    }
+});
+
+
 router.get('/courses/filter', async (req, res, next) => {
     try {
         // Extract filters from query parameters
