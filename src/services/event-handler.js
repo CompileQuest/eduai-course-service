@@ -1,3 +1,4 @@
+import CourseService from "../services/course-service.js";
 import CousreService from "../services/course-service.js";
 const cousreService = new CousreService();
 
@@ -10,6 +11,31 @@ const eventHandlers = {
         console.log("Handling user.deleted event...");
         return await cousreService.deleteUser(payload.userId);
     },
+    "course.cart.info": async (payload) => {
+        console.log("Handling course cart info event", payload);
+
+        try {
+            const courseArray = payload.data;
+            const courseInfo = await cousreService.getCousreCartInfo(courseArray);
+
+            return {
+                success: true,
+                message: "Successfully fetched the course info for the cart",
+                statusCode: 200,
+                data: courseInfo
+            };
+        } catch (error) {
+            console.error("Error in course.cart.info handler:", error);
+
+            return {
+                success: false,
+                message: "Failed to fetch course info for the cart",
+                statusCode: error?.statusCode || 500,
+                error: error.message || "Internal Server Error"
+            };
+        }
+    }
+
     // Add more event handlers as needed
 };
 

@@ -324,6 +324,10 @@ class CourseService {
 
 
 
+
+
+
+
     async updateThumbNail(courseId, image) {
         try {
             // 1. Fetch the course to get the existing thumbnail information (to delete)
@@ -370,15 +374,11 @@ class CourseService {
     }
 
 
-    async courseCartInfo(courseIdArray) {
+    async getCousreCartInfo(courseIdArray) {
         try {
             // Call the repository function to fetch course details
-            const courseInfo = await this.repository.courseCartInfo(courseIdArray);
-
-            // If no courses were found, throw an error
-            if (!courseInfo || courseInfo.length === 0) {
-                throw new NotFoundError("Courses not found", "No courses were found for the provided IDs.");
-            }
+            const courseInfo = await this.repository.getCousreCartInfo(courseIdArray);
+            console.log("this is the course info ", courseInfo);
 
             // Return the course info
             return courseInfo;

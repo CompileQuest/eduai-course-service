@@ -138,7 +138,7 @@ router.put('/edit-course/:courseId',
 router.get('/courses/production/:courseId', async (req, res, next) => {
     try {
         const { courseId } = req.params;
-        const userId = getUserId(req.auth);
+        const userId = getUserId(req.auth, ROLES.STUDENT);
         const userRole = getCurrentRole(req.auth);
         console.log("this is the user id  ", userId);
         console.log("this is the user role  ", userRole);

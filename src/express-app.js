@@ -50,6 +50,13 @@ export default async (app) => {
 
   // Routes
   apiRoutes(app);
+
+
+
+
+
+
+
   // import('./api/routes/v1/cloudinary.js').then((module) => module.default(app)); // Import cloudinary routes dynamically
 
   app.use(ErrorHandler);

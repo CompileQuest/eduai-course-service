@@ -52,7 +52,34 @@ class CourseRepository {
     }
 
 
-    async courseCartInfo(courseIdArray) {
+    async getCousreCartInfo(courseArray) {
+
+
+        const courses = await prisma.course.findMany({
+            where: {
+                id: {
+                    in: courseArray
+                },
+                deletedAt: null // To exclude soft-deleted courses
+            },
+            select: {
+                id: true,
+                title: true,
+                price: true,
+                discountedPrice: true,
+                thumbnailUrl: true,
+                averageRating: true,
+                totalReviews: true,
+                instructorId: true
+            }
+        });
+
+        return courses;
+    }
+
+
+
+    async getCousreCartInfo(courseIdArray) {
         // Fetch courses by courseIds and select only necessary fields
         return await prisma.course.findMany({
             where: {

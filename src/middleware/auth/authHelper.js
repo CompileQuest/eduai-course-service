@@ -1,5 +1,13 @@
 import { ForbiddenError, UnauthorizedError } from '../../utils/app-errors.js';
 const mock = true;
+
+
+
+
+
+
+
+
 const checkRole = (requiredRoles = []) => {
     return (req, res, next) => {
         if (mock) {
@@ -96,6 +104,7 @@ const getUserId = (auth, Role) => {
     }
     return auth.sub; // `sub` contains the user ID
 };
+
 
 
 const getCurrentRole = (auth) => {
