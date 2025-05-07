@@ -13,12 +13,14 @@ router.post("/", async (req, res, next) => {
         console.log("this is the message ", hello);
         console.log(`Received event: ${type}`);
 
+
         const result = await handleEvent(type, payload);
         res.status(200).json({
             success: result.success,
             message: `Handled event: ${type}`,
             data: result.data
         });
+
 
     } catch (error) {
         next(error);
