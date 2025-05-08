@@ -4,10 +4,14 @@ import { uploadImage } from './cloudinary/image-uploader.js';
 import { deleteImageFromCloudinary } from './cloudinary/cloudinary-utils.js';
 import ResponseHelper from '../utils/responseHelper.js';
 import ROLES from '../config/roles.js';
-
+import HttpClient from './external/httpClient.js';
+import services from './external/services.js';
+import EVENTS from './external/events.js';
+import { FormateData } from '../utils/index.js';
 class CourseService {
     constructor() {
         this.repository = new CourseRepository();
+        this.httpClient = new HttpClient();
     }
 
 
@@ -136,13 +140,24 @@ class CourseService {
     async FetchCourseProductionById(courseId, userId, currentRole) {
         try {
             let course;
-            let ownsCourse = true;
-
+            let ownsCourse = false;
             if (userId && currentRole === ROLES.STUDENT) {
                 // Step 1: Check if the user owns/enrolled in the course via the User Service
                 // TODO: Actually call the User Service to set this value
-                // ownsCourse = await userService.checkEnrollment(courseId, userId);
+                let payload = {
+                    userId: userId,
+                    courseId: courseId
+                }
+                payload = FormateData(payload);
 
+                console.log("this is the payload ", payload);
+                const result = await this.httpClient.callService(
+                    services.userService, // Service name
+                    EVENTS.USER_OWNS_COURSE, // Event or endpoint
+                    payload // Pass the HttpMessage as the payload
+                );
+
+                ownsCourse = result;
                 if (ownsCourse) {
                     console.log("1");
                     // Step 2a: Fetch full course access if user owns the course
@@ -497,6 +512,7 @@ class CourseService {
             }
         }
     }
+
 
     async getSectionTemp(courseId) {
         try {

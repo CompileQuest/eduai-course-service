@@ -1,63 +1,54 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-const { APP_SECRET } = require("../config");
-
-//Utility functions
-module.exports.GenerateSalt = async () => {
-  return await bcrypt.genSalt();
-};
-
-module.exports.GeneratePassword = async (password, salt) => {
-  return await bcrypt.hash(password, salt);
-};
-
-module.exports.ValidatePassword = async (
-  enteredPassword,
-  savedPassword,
-  salt
-) => {
-  return (await this.GeneratePassword(enteredPassword, salt)) === savedPassword;
-};
-
-module.exports.GenerateSignature = async (payload) => {
+import util from "util";
+/**
+ * Extracts and transforms form fields from the user context.
+ * @param {Object} userContext - The user context object from the SuperTokens request.
+ * @returns {Object|null} - A key-value object of form fields or null if not found.
+ */
+function extractFormFields(userContext) {
   try {
-    return await jwt.sign(payload, APP_SECRET, { expiresIn: "30d" });
-  } catch (error) {
-    console.log(error);
-    return error;
-  }
-};
-
-module.exports.ValidateSignature = async (req) => {
-  try {
-    // Check if Authorization header is present
-    const authHeader = req.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new Error("Authorization header missing or incorrect format");
+    const formFields = userContext?._default?.request?.parsedJSONBody?.formFields;
+    if (formFields && Array.isArray(formFields)) {
+      return formFields.reduce((acc, field) => {
+        acc[field.id] = field.value;
+        return acc;
+      }, {});
     }
-
-    // Extract the token
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-      throw new Error("Token missing in Authorization header");
-    }
-
-    // Verify the token
-    const payload = await jwt.verify(token, APP_SECRET);
-    req.user = payload;
-    return true;
+    return null; // Return null if formFields are not found
   } catch (error) {
-    console.error("Token validation error:", error.message);
-    return false;
+    console.error("Error extracting form fields:", error);
+    return null;
   }
-};
+}
 
 
-module.exports.FormateData = (data) => {
+
+function FormateData(data) {
   if (data) {
     return { data };
   } else {
     throw new Error("Data Not found!");
   }
 };
+
+// Granular helper function to create event payload with flexible data
+function createPayloadWithEvent(event, data = {}) {
+  // Dynamically determine event if not provided
+  const derivedEvent = event || "no_event";
+  // Construct and return the payload with dynamic data
+  const payload = {
+    event: derivedEvent,
+    data: { ...data }  // Spread the provided data into the payload
+  };
+  //const formatedData = FormateData(payload);
+  return payload;
+}
+
+
+
+export {
+  extractFormFields,
+  FormateData,
+  createPayloadWithEvent,
+}
+
+

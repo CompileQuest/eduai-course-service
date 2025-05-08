@@ -1,23 +1,9 @@
-// src/utils/httpClient.js
 import axios from 'axios';
-import { NotFoundError } from '../../utils/app-errors.js';
-import services from './services.js'; // Import the services configuration
+import { ServiceUnavailableError } from '../../utils/app-errors.js'; // Import only ServiceUnavailableError
+import HttpMessage from './HttpMessage.js';
 
 
 class HttpClient {
-    /**
-     * Resolve the URL for a given service and event.
-     * @param {string} serviceName - The name of the service to call.
-     * @param {string} eventName - The event or endpoint to call.
-     * @returns {string} - The full URL for the request.
-     */
-    resolveUrl(serviceName, eventName) {
-        const baseUrl = services[serviceName];
-        if (!baseUrl) {
-            throw new Error(`Service ${serviceName} not found in configuration.`);
-        }
-        return `${baseUrl}/${eventName}`;
-    }
 
     /**
      * Call a service via HTTP.
@@ -26,31 +12,36 @@ class HttpClient {
      * @param {object} payload - The payload to send in the request.
      * @returns {Promise<object>} - The response from the service.
      */
-    async callService(serviceName, eventName, payload) {
-        const url = this.resolveUrl(serviceName, eventName);
+    async callService(serviceUrl, eventName, payload, metadata = {}) {
+        console.log(`Calling service at ${serviceUrl} for event: ${eventName}`);
 
+        // Create a structured HTTP message
+        const message = new HttpMessage(eventName, payload, metadata);
+        console.log("Message to be sent:", message);
         try {
-            const response = await axios.post(url, payload, {
+            const response = await axios.post(serviceUrl, message, {
                 headers: { 'Content-Type': 'application/json' },
             });
-            return response.data;
+            console.log("Response from service:", response.data);
+            return response.data.data;
         } catch (error) {
             if (error.response) {
-                // The request was made, but the server responded with a non-2xx status
+                console.log("here am hooooola")
                 throw new ServiceUnavailableError(
-                    `Service ${serviceName} returned ${error.response.status}: ${error.response.data}`
+                    `Service at ${serviceUrl} returned ${error.response.status}: ${JSON.stringify(error.response.data)}`
                 );
             } else if (error.request) {
-                // The request was made but no response was received
+
                 throw new ServiceUnavailableError(
-                    `Service ${serviceName} is unreachable: ${error.message}`
+                    `Service at ${serviceUrl} is unreachable: ${error.message}`
                 );
             } else {
-                // Something happened in setting up the request
-                throw new Error(`Error calling service ${serviceName}: ${error.message}`);
+                throw new ServiceUnavailableError(
+                    `Error calling service at ${serviceUrl}: ${error.message}`
+                );
             }
         }
     }
 }
 
-export default new HttpClient();
+export default HttpClient;

@@ -89,9 +89,10 @@ const checkAuth = (req, res, next) => {
 
 
 
+
 const getUserId = (auth, Role) => {
     if (mock && Role === 'STUDENT') {
-        return 'asdfa2342fasrq23fwe234fasd';
+        return 'c1243e05-49f2-4931-9d73-f77a049a5935';
     }
 
     if (mock && Role === 'INSTRUCTOR') {
