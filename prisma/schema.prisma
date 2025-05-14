@@ -39,15 +39,15 @@ model Course {
 }
 
 model CourseStatistics {
-  id             String    @id @default(uuid())
-  courseId       String    @unique @map("course_id") // Ensuring one-to-one relation with Course
-  enrolledNumber Int?      @map("enrolled_number")
-  averageRating  Float?    @map("average_rating")
-  totalReviews   Int?      @map("total_reviews")
-  totalSections  Int?      @map("total_sections")
-  totalLectures  Int?      @map("total_lectures")
-  course         Course    @relation(fields: [courseId], references: [id])
-  deletedAt      DateTime? @map("deleted_at") // Soft delete field
+  id                       String    @id @default(uuid())
+  courseId                 String    @unique @map("course_id") // Ensuring one-to-one relation with Course
+  enrolledNumber           Int?      @map("enrolled_number")
+  statisticalAverageRating Float?    @map("statistical_average_rating") // NEW DB COLUMN
+  totalReviews             Int?      @map("total_reviews")
+  totalSections            Int?      @map("total_sections")
+  totalLectures            Int?      @map("total_lectures")
+  course                   Course    @relation(fields: [courseId], references: [id])
+  deletedAt                DateTime? @map("deleted_at") // Soft delete field
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

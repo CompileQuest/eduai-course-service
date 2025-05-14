@@ -1,6 +1,7 @@
-import CourseService from "../services/course-service.js";
+import { AppError, BadRequestError, InternalServerError } from "../utils/app-errors.js";
 import CousreService from "../services/course-service.js";
 const cousreService = new CousreService();
+
 
 const eventHandlers = {
     "cousre.created": async (payload) => {
@@ -34,6 +35,49 @@ const eventHandlers = {
                 error: error.message || "Internal Server Error"
             };
         }
+    },
+    "user.owns.course": async (payload) => {
+        try {
+            console.log("Handling user owns course event...");
+
+            console.log("this si the payload before it ", payload);
+            // Check if payload is provided and valid
+            if (!payload) {
+                throw new BadRequestError("Invalid payload: Missing course data");
+            }
+
+            const { ownedCourses, userId } = payload;
+            console.log("this is the owned courses ", ownedCourses);
+            console.log("this is the user id ", userId);
+
+            // Fetch the course information based on the course IDs
+            const userCourses = await cousreService.getUserOwnedCourses(userId, ownedCourses);
+
+
+
+
+            // Construct the success response
+            const response = {
+                success: true, // Indicates the operation was successful
+                status: 200, // HTTP status code for success
+                message: "User Courses retrieved successfully.", // Success message
+                data: userCourses // The actual data (course info)
+            };
+
+            // Return the success response
+            return response;
+
+        } catch (error) {
+            // Handle known errors (e.g., validation or business logic errors)
+            if (error instanceof AppError) {
+                console.error("Bad Request Error:", error.message);
+                throw error;  // Rethrow the BadRequestError to notify the caller
+            }
+
+            // Handle unexpected errors (e.g., database or network issues)
+            console.error("Unexpected error while processing the event", error);
+            throw new InternalServerError("An unexpected error occurred while processing the event", error.message);
+        }
     }
 
     // Add more event handlers as needed
@@ -48,6 +92,7 @@ const eventHandlers = {
  */
 export const handleEvent = async (eventType, payload) => {
     if (eventHandlers[eventType]) {
+        console.log("this is the payload ", payload);
         return await eventHandlers[eventType](payload);
     } else {
         console.warn(`No handler found for event: ${eventType}`);

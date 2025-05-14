@@ -4,6 +4,11 @@ import Consumer from './consumer.js';
 import Producer from './producer.js';
 import BrokerMessage from './settings/brokerMessage.js';
 import { SERVICE_NAME } from '../../../config/index.js';
+
+
+
+// todo 🧼 Optional: Auto-Reconnect on Channel Close
+
 class RabbitMQClient {
     constructor() {
         if (RabbitMQClient.instance) {

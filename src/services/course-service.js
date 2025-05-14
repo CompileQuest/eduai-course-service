@@ -44,6 +44,22 @@ class CourseService {
 
 
 
+
+
+    async getUserOwnedCourses(userId, ownedCourses) {
+        try {
+            const userCourses = await this.repository.getUserOwnedCourses(userId, ownedCourses);
+            console.log("this is the user courses ", userCourses);
+
+            return userCourses;
+        } catch (error) {
+            console.log("this si the error ", error.message)
+            throw new APIError("something went wrong while fetching user courses");
+        }
+    }
+
+
+
     async getLandingPageCourses(filter) {
         try {
 

@@ -20,6 +20,51 @@ class CourseRepository {
 
 
 
+    async getUserOwnedCourses(userId, ownedCourses) {
+        try {
+            const courses = await prisma.course.findMany({
+                where: {
+                    id: {
+                        in: ownedCourses,
+                    },
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    thumbnailUrl: true,
+                    averageRating: true,
+                    instructorId: true,
+                    userProgressCousre: {
+                        where: {
+                            userId: userId,
+                        },
+                        select: {
+                            isCompleted: true,
+                            completedAt: true,
+                        },
+                    },
+                },
+            });
+
+            // Map and format results to include progress
+            return courses.map((course) => ({
+                id: course.id,
+                title: course.title,
+                thumbnailUrl: course.thumbnailUrl,
+                averageRating: course.averageRating,
+                instructorId: course.instructorId,
+                progress: course.userProgressCousre.length > 0
+                    ? course.userProgressCousre[0].isCompleted ? 100 : 0
+                    : 0,
+            }));
+        } catch (err) {
+            throw err;
+        }
+    }
+
+
+
+
     async checkIfQuizFileExist(courseId, sectionId) {
         const quizFile = await prisma.file.findMany({
             where: {
@@ -41,7 +86,7 @@ class CourseRepository {
 
     async publishCourse(courseid) {
         const publishedCousre = await prisma.course.update({
-            where: { id: courseId },
+            where: { id: courseid },
             data: {
                 status: 'PUBLISHED', // If using enum, you can use CourseStatus.PUBLISHED
                 publishedAt: new Date(), // Optional: track when it was published

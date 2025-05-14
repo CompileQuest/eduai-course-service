@@ -100,6 +100,7 @@ router.post('/courses/create-course-template',
     }
 );
 
+
 router.put('/edit-course/:courseId',
     upload.single('thumbnail'),
     checkAuth,
