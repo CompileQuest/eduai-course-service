@@ -22,7 +22,8 @@ class HttpClient {
             const response = await axios.post(serviceUrl, message, {
                 headers: { 'Content-Type': 'application/json' },
             });
-            console.log("Response from service:", response.data);
+            //console.log("Response status:", response);
+            console.log("Response from service:", response.data.data);
             return response.data.data;
         } catch (error) {
             if (error.response) {

@@ -8,7 +8,7 @@ import tokenManipulator from "../../../middleware/tokenManipulator.js";
 import { BadRequestError, STATUS_CODES } from '../../../utils/app-errors.js'; // Change this import
 import express from 'express';
 import { ServerDescriptionChangedEvent } from 'mongodb';
-import { checkRole, getUserId, getCurrentRole, checkAuth } from '../../../middleware/auth/authHelper.js';
+import { checkRole, getUserId, getCurrentRole, checkAuth, optionalAuth } from '../../../middleware/auth/authHelper.js';
 import roles from '../../../config/roles.js';
 import ROLES from '../../../config/roles.js';
 import { check } from 'prisma';
@@ -136,10 +136,10 @@ router.put('/edit-course/:courseId',
 
 
 
-router.get('/courses/production/:courseId', async (req, res, next) => {
+router.get('/courses/production/:courseId', optionalAuth, async (req, res, next) => {
     try {
         const { courseId } = req.params;
-        const userId = getUserId(req.auth, ROLES.STUDENT);
+        const userId = getUserId(req.auth);
         const userRole = getCurrentRole(req.auth);
         console.log("this is the user id  ", userId);
         console.log("this is the user role  ", userRole);
@@ -169,13 +169,14 @@ router.put('/courses/:courseId/thumbnail-upload',
     });
 
 
-router.get('/instructor-courses', async (req, res, next) => {
+router.get('/instructor-courses', checkAuth, checkRole([ROLES.INSTRUCTOR]), async (req, res, next) => {
     try {
         // const tempUserId = getUserId(req.auth);
         //console.log("the user id is ", tempUserId);
         const page = parseInt(req.query.page, 10);
         const limit = parseInt(req.query.limit, 10);
-        const instructorId = getUserId(req.auth, 'INSTRUCTOR');
+        const instructorId = getUserId(req.auth);
+        console.log("this is the instructor id ", instructorId);
         if (isNaN(page) || isNaN(limit)) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
@@ -245,11 +246,13 @@ router.post('/courses/getFilterCoursesPaginated', async (req, res, next) => {
 });
 
 
-router.get('/:courseId/content', async (req, res, next) => {
+router.get('/:courseId/content', checkAuth, checkRole([ROLES.INSTRUCTOR]), async (req, res, next) => {
     try {
         const { courseId } = req.params;
         console.log("Fetching course content with id:", courseId);
-        const courseContent = await service.FetchCourseContentById(courseId);
+        const instructorId = getUserId(req.auth); // Get instructorId from the request
+        console.log("this is the instructor id ", instructorId);
+        const courseContent = await service.FetchCourseContentForInstructor(instructorId, courseId);
         res.status(200).json(courseContent);
     } catch (err) {
         //    console.log("form api layer");
@@ -424,11 +427,11 @@ router.delete('/:courseId/deleteVideo', async (req, res, next) => {
 
 
 
-router.put('/:courseId/editVideo', async (req, res, next) => {
+router.put('/:courseId/editVideo', checkAuth, checkRole([ROLES.INSTRUCTOR]), async (req, res, next) => {
     try {
         const { courseId } = req.params;
         const { videoId, title, isFree } = req.body;
-        const instructorId = "uuid_here_of_instructor_test"; // Temporary for testing
+        const instructorId = getUserId(req.auth);
 
         // Simple validation using your custom error handling
         if (!courseId || !instructorId || !videoId || !title || !isFree) {
@@ -436,7 +439,7 @@ router.put('/:courseId/editVideo', async (req, res, next) => {
         }
 
         // Call the service method to delete the section
-        const videoDeleted = await service.editVideo(courseId, instructorId, videoId, { title, isFree });
+        const videoDeleted = await service.editVideo(courseId, instructorId, videoId, title, isFree);
         res.status(200).json(videoDeleted);
     } catch (err) {
         console.log("this is the error ", err);

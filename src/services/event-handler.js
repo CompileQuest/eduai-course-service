@@ -79,6 +79,49 @@ const eventHandlers = {
             throw new InternalServerError("An unexpected error occurred while processing the event", error.message);
         }
     }
+    ,
+    "course.bookmark.info": async (payload) => {
+        try {
+            console.log("Handling user course bookmark info ...");
+
+            console.log("this is the payload ", payload);
+            // Check if payload is provided and valid
+            if (!payload) {
+                throw new BadRequestError("Invalid payload: Missing course data");
+            }
+
+            const { courseId } = payload.data;
+
+
+            // Fetch the course information based on the course IDs
+            const cousreBookmarkInfo = await cousreService.getUserBookmarkCourse(courseId);
+
+
+
+
+            // Construct the success response
+            const response = {
+                success: true, // Indicates the operation was successful
+                status: 200, // HTTP status code for success
+                message: "User Bookmark course fetched successfully.", // Success message
+                data: cousreBookmarkInfo // The actual data (course info)
+            };
+
+            // Return the success response
+            return response;
+
+        } catch (error) {
+            // Handle known errors (e.g., validation or business logic errors)
+            if (error instanceof AppError) {
+                console.error("Bad Request Error:", error.message);
+                throw error;  // Rethrow the BadRequestError to notify the caller
+            }
+
+            // Handle unexpected errors (e.g., database or network issues)
+            console.error("Unexpected error while processing the event", error);
+            throw new InternalServerError("An unexpected error occurred while processing the event", error.message);
+        }
+    }
 
     // Add more event handlers as needed
 };

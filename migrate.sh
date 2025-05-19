@@ -24,5 +24,4 @@ echo "🌱 Seeding the database..."
 node prisma/seed/categorySeed.js
 sleep 1
 
-node prisma/seed/createCourse.js
 echo "✅ Database setup complete!"

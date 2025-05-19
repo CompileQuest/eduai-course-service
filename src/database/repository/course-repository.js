@@ -64,6 +64,68 @@ class CourseRepository {
 
 
 
+    async getUserBookmarkCourse(courseId) {
+
+        const course = await prisma.course.findMany({
+            where: {
+                id: courseId
+            },
+            select: {
+                id: true,
+                title: true,
+                thumbnailUrl: true,
+            },
+        });
+
+
+        return course;
+    }
+
+
+
+
+
+    async handlePaymentCompleted(userId, courseId) {
+        return await this.prisma.$transaction(async (tx) => {
+            // Upsert CourseStatistics: increment enrolledNumber or create if not exists
+            await tx.courseStatistics.upsert({
+                where: { courseId },
+                update: { enrolledNumber: { increment: 1 } },
+                create: {
+                    courseId,
+                    enrolledNumber: 1,
+                    totalReviews: 0,
+                    totalSections: 0,
+                    totalLectures: 0,
+                    statisticalAverageRating: 0,
+                },
+            });
+
+            // Check if user progress exists
+            const existingProgress = await tx.userProgressCourse.findUnique({
+                where: {
+                    userId_courseId: { userId, courseId },
+                },
+            });
+
+            // Create user progress if not exists
+            if (!existingProgress) {
+                await tx.userProgressCourse.create({
+                    data: {
+                        userId,
+                        courseId,
+                        isCompleted: false,
+                    },
+                });
+            }
+        });
+    }
+
+
+
+
+
+
 
     async checkIfQuizFileExist(courseId, sectionId) {
         const quizFile = await prisma.file.findMany({
@@ -519,9 +581,17 @@ class CourseRepository {
 
 
 
-    async getLandingPageCourses(filter, limit = 10) {
+    async getLandingPageCourses(filter = {}, limit = 10) {
         return await this.prisma.course.findMany({
-            take: limit, // Limits the number of courses returned
+            where: {
+                status: "PUBLISHED",
+                // ...filter,  // Allow additional filters if passed
+                deletedAt: null, // Exclude soft-deleted courses
+            },
+            take: limit,
+            orderBy: {
+                createdAt: 'desc', // Optional: latest courses first
+            },
         });
     }
 
@@ -761,7 +831,7 @@ class CourseRepository {
     }
 
     // for now this only is used for showing the section edit later to make function that only shows section
-    async FetchCourseContentById(courseId) {
+    async FetchCourseContentForInstructor(courseId) {
         const course = await prisma.course.findUnique({
             where: { id: courseId },
             select: {
@@ -779,6 +849,9 @@ class CourseRepository {
                                 id: true,
                                 title: true,
                                 duration: true,
+                                is_free: true,
+                                playback_url: true
+
                             },
                         },
                     },
@@ -1076,12 +1149,12 @@ class CourseRepository {
         });
     }
 
-    async editVideo(videoId, payload) {
+    async editVideo(videoId, title, is_free) {
         return this.prisma.video.update({
             where: { id: videoId },
             data: {
-                title: payload.title,
-                is_free: payload.is_free
+                title: title,
+                is_free: is_free
             }
         });
     }

@@ -13,7 +13,7 @@ class MessageHandler {
 
         this.handlers = {
             [RoutingKeys.CLOUDINARY_UPLOAD]: this.handleCloudinaryUpload,
-            [RoutingKeys.PAYMENT_COMPLETED]: this.handlePaymentProcessed,
+            [RoutingKeys.PAYMENT_SESSION_COMPLETED]: this.handlePaymentProcessed,
         };
     }
 
@@ -55,11 +55,51 @@ class MessageHandler {
         console.log(`👤 [${type}] User Updated:`, payload);
         return { success: true, message: `Handled ${type}`, payload };
     }
-
     async handlePaymentProcessed(payload, type) {
         console.log(`💳 [${type}] Payment Processed:`, payload);
-        return { success: true, message: `Handled ${type}`, payload };
+
+        const metadata = payload.metadata || {};
+
+        // Parse courseIds safely
+        let courseIds = [];
+        try {
+            courseIds = JSON.parse(metadata.courseIds || '[]');
+        } catch (e) {
+            console.error('❌ Failed to parse courseIds:', e);
+            return { success: false, message: 'Invalid courseIds format', payload };
+        }
+
+        const userId = metadata.userId;
+
+        if (!userId || !Array.isArray(courseIds) || courseIds.length === 0) {
+            console.error('❌ Missing userId or courseIds in metadata');
+            return { success: false, message: 'Missing required metadata', payload };
+        }
+
+        console.log(`User ID: ${userId}`);
+        console.log(`Course IDs: ${courseIds}`);
+
+        const results = [];
+
+        for (const courseId of courseIds) {
+            try {
+                const result = await this.courseService.handlePaymentCompleted(userId, courseId);
+                results.push({ courseId, success: true, message: 'Payment handled successfully' });
+            } catch (error) {
+                console.error(`❌ Failed to handle payment for course ${courseId}:`, error);
+                results.push({ courseId, success: false, message: error.message || 'Unknown error' });
+            }
+        }
+
+        const allSucceeded = results.every(r => r.success);
+
+        return {
+            success: allSucceeded,
+            message: allSucceeded ? `All payments processed successfully` : `Some payments failed`,
+            details: results,
+        };
     }
+
 
     async handleUnknownMessage(payload, type) {
         console.warn(`❓ Unknown message type: ${type}`, payload);

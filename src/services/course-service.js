@@ -60,6 +60,28 @@ class CourseService {
 
 
 
+
+    async getUserBookmarkCourse(courseId) {
+        try {
+
+
+            console.log("this isthe course id before doing the databse operation ", courseId);
+            const userBookmarkCourse = await this.repository.getUserBookmarkCourse(courseId);
+            console.log("this is the user courses ", userBookmarkCourse);
+
+
+            if (!userBookmarkCourse) {
+                throw new NotFoundError("No bookmark courses found for this user");
+            }
+
+            return userBookmarkCourse;
+        } catch (error) {
+            console.log("this si the error ", error.message)
+            throw new APIError("something went wrong while fetching user courses");
+        }
+    }
+
+
     async getLandingPageCourses(filter) {
         try {
 
@@ -72,7 +94,7 @@ class CourseService {
             console.error("Error updating thumbnail:", error);
 
             // Handle specific errors (e.g., image upload or DB update failures)
-            if (error instanceof SomeSpecificError) {
+            if (error instanceof APIError) {
                 return ResponseHelper.error('Specific error message', 400);
             }
 
@@ -95,6 +117,24 @@ class CourseService {
             return true;
         } catch (error) {
             throw new APIError("something went wrong checking the quiz file exist or not !!");
+        }
+    }
+
+
+
+    async handlePaymentCompleted(userId, courseId) {
+        try {
+            const result = await this.repository.handlePaymentCompleted(userId, courseId);
+
+
+            return {
+                success: true,
+                message: "Payment processed successfully",
+                data: true
+            }
+        } catch (error) {
+            console.log("this is the error  ", error.message)
+            throw new APIError("something went wrong while updating the payment");
         }
     }
 
@@ -166,6 +206,9 @@ class CourseService {
                 }
                 payload = FormateData(payload);
 
+
+                // Todo instead of talking to the user service i can know if 
+                // todo the user have access from the progress table when course purhcases happens !!
                 console.log("this is the payload ", payload);
                 const result = await this.httpClient.callService(
                     services.userService, // Service name
@@ -574,9 +617,14 @@ class CourseService {
         return await this.repository.FetchCourseTemplate();
     }
 
-    async FetchCourseContentById(courseId) {
+    async FetchCourseContentForInstructor(instructorId, courseId) {
         try {
-            const course = await this.repository.FetchCourseContentById(courseId);
+
+            // 1. Check if the instructor owns the course
+            await this._validateInstructorOwnership(courseId, instructorId);
+
+
+            const course = await this.repository.FetchCourseContentForInstructor(courseId);
             //console.log(course);
             console.dir(course, { depth: null, colors: true });
 
@@ -769,14 +817,14 @@ class CourseService {
 
 
 
-    async editVideo(courseId, instructorId, videoId, payload) {
+    async editVideo(courseId, instructorId, videoId, title, isFree) {
         try {
             // Use the reusable validation method
             await this._validateInstructorOwnership(courseId, instructorId);
 
 
             // Edit section
-            const editedVideo = await this.repository.editVideo(videoId, payload);
+            const editedVideo = await this.repository.editVideo(videoId, title, isFree);
             if (!editedVideo) {
                 throw new InternalServerError("Failed to edit Video.");
             }

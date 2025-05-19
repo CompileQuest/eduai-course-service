@@ -48,9 +48,8 @@ model CourseStatistics {
   totalLectures            Int?      @map("total_lectures")
   course                   Course    @relation(fields: [courseId], references: [id])
   deletedAt                DateTime? @map("deleted_at") // Soft delete field
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
 }
 
 model Category {
@@ -212,4 +211,6 @@ model UserProgressCourse {
   deletedAt   DateTime? @map("deleted_at") // Soft delete field
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([userId, courseId], name: "userId_courseId")
 }
