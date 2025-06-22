@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { APIError, STATUS_CODES, AppError } from '../../utils/app-errors.js';
+import COURSE_STATUS from '../../constants/courseStatusEnum.js';
 
 const prisma = new PrismaClient();
 
@@ -584,7 +585,7 @@ class CourseRepository {
     async getLandingPageCourses(filter = {}, limit = 10) {
         return await this.prisma.course.findMany({
             where: {
-                status: "PUBLISHED",
+                status: COURSE_STATUS.PUBLISHED, // Only published courses
                 // ...filter,  // Allow additional filters if passed
                 deletedAt: null, // Exclude soft-deleted courses
             },

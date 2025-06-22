@@ -600,7 +600,6 @@ class CourseService {
                     }
                 } : null
             }));
-
             return ResponseHelper.success("Fetch your sections successfully", sectionsWithQuizzes);
         } catch (error) {
             if (error instanceof AppError) {

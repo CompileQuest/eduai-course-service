@@ -1,4 +1,4 @@
-export const COURSE_STATUS = Object.freeze({
+const COURSE_STATUS = Object.freeze({
     ALL: 'ALL',
     DRAFT: 'DRAFT',
     PENDING: 'PENDING',
@@ -11,3 +11,6 @@ export const COURSE_STATUS = Object.freeze({
     EXPIRED: 'EXPIRED',
     UNPUBLISHED: 'UNPUBLISHED',
 });
+
+
+export default COURSE_STATUS;

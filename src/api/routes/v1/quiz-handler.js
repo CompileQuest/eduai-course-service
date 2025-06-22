@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 });
 
 
-router.get('/:courseId/:sectionid/file', async (req, res, next) => {
+router.get('/:sectionid/file', async (req, res, next) => {
     try {
         const { courseId, sectionid } = req.params;
 
@@ -22,7 +22,7 @@ router.get('/:courseId/:sectionid/file', async (req, res, next) => {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
-        const file = await service.getFileBySectionId(courseId, sectionid);
+        const file = await service.getFileBySectionId(sectionid);
         res.status(200).json(file);
     } catch (err) {
         console.log("this is the error ", err);

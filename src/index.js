@@ -14,8 +14,8 @@ const StartServer = async () => {
     const server = app.listen(PORT, () => {
         console.log(`Course Service is running on port ${PORT}`);
 
-        // Start the tunnel after the server is running
-        // startTunnel(PORT, TUNNEL_DOMAIN);
+        //  Start the tunnel after the server is running
+        startTunnel(PORT, TUNNEL_DOMAIN);
     });
 
     server.on('error', (err) => {

@@ -7,7 +7,7 @@ export default class HttpMessage {
         this.type = type; // Message type (e.g., "user.deleted", "video.delete")
         this.timestamp = new Date().toISOString(); // Current timestamp
         this.source = SERVICE_NAME; // Source of the message
-        this.payload = { ...payload }; // Include event name in the payload
+        this.payload = payload; // Include event name in the payload
         this.transportType = "http"; // "http" or "broker"
         this.metadata = { retries: 0, priority: "normal", ...metadata }; // Default metadata
     }

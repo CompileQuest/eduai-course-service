@@ -11,13 +11,12 @@ class QuizService {
     }
 
 
-    async getFileBySectionId(courseId, sectionid) {
+    async getFileBySectionId(sectionid) {
         try {
 
-            console.log(courseId);
             console.log(sectionid);
 
-            const file = await this.repository.getFileBySectionId(courseId, sectionid);
+            const file = await this.repository.getFilesBySectionId(sectionid);
             if (!file) {
                 throw new InternalServerError("Error fetching file for this section ");
             }

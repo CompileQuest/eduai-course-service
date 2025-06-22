@@ -17,33 +17,43 @@ router.get('/courses', async (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const status = req.query.status;
-
         const response = await adminService.getPaginatedCourses(page, limit, status);
-        res.status(response.statusCode).json(response); // ✅ Returns service response directly
+        res.status(200).json(response); // ✅ Returns service response directly
     } catch (err) {
         next(err);
     }
 });
 
 
-router.post('/publishCourse/:courseId', async (req, res, next) => {
+router.put('/updateCourseStatus/:courseId', async (req, res, next) => {
     try {
         const { courseId } = req.params;
+        const { status } = req.body;
+
 
         // Simple validation using your custom error handling
-        if (!courseId) {
+        if (!courseId || !status) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
 
+
+        console.log("this is the course id ", courseId);
+        console.log("This is the status ", status);
+
+
         // Call the service method to delete the section
-        const sectionWithCourses = await adminService.publishCourse(courseId);
+        //  const sectionWithCourses = await adminService.updateCourseStatus(courseId);
+        const sectionWithCourses = true;
         res.status(200).json(sectionWithCourses);
     } catch (err) {
         console.log("this is the error ", err);
         next(err); // Passes error to centralized error handling middleware
     }
 });
+
+
+
 
 
 router.get('/courses/filter', async (req, res, next) => {

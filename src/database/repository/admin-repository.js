@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { APIError, STATUS_CODES, AppError } from '../../utils/app-errors.js';
-import { COURSE_STATUS } from '../../constants/courseStatusEnum.js';
+import COURSE_STATUS from '../../constants/courseStatusEnum.js';
+
 
 const prisma = new PrismaClient();
 
@@ -23,6 +24,13 @@ class AdminRepository {
     }
 
 
+    async updateCourseStatus(courseId, status) {
+        return await prisma.course.update({
+            where: { id: courseId },
+            data: { status },
+        });
+    }
+
 
     async getPaginatedCourses(page, limit, status) {
         console.log("this is the status ", status);
@@ -30,7 +38,7 @@ class AdminRepository {
         const skip = (page - 1) * limit;
 
         // If status is "all", do not filter by status; otherwise, filter by the provided status
-        const whereCondition = status === "all" ? {} : { status };
+        const whereCondition = status === "ALL" ? {} : { status };
 
         const [courses, total] = await Promise.all([
             this.prisma.course.findMany({

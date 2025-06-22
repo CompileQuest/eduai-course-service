@@ -15,46 +15,37 @@ class QuizRepository {
     }
 
 
-    async getFileBySectionId(courseId, sectionId) {
-        const course = await prisma.course.findUnique({
-            where: { id: courseId, deletedAt: null },
+    async getFilesBySectionId(sectionId) {
+        const section = await prisma.section.findFirst({
+            where: {
+                id: sectionId,
+                deletedAt: null,
+            },
             select: {
-                sections: {
-                    where: { id: sectionId, deletedAt: null },
-                    orderBy: { order: 'asc' },
+                id: true,
+                sectionTitle: true,
+                order: true,
+                files: {
+                    where: { deletedAt: null },
                     select: {
                         id: true,
-                        sectionTitle: true,
-                        order: true,
-                        files: {
-                            where: { deletedAt: null },
-                            select: {
-                                id: true,
-                                secure_url: true
-                            }
-                        }
-                    }
+                        secure_url: true,
+                    },
                 },
             },
         });
 
-        // Handle cases where the course or section does not exist
-        if (!course) {
-            throw new InternalServerError(`Course with ID ${courseId} not found or deleted.`);
-        }
-        if (!course.sections.length) {
-            throw new InternalServerError(`Section with ID ${sectionId} not found in this course.`);
+        if (!section) {
+            throw new InternalServerError(`Section with ID ${sectionId} not found or has been deleted.`);
         }
 
-        const section = course.sections[0];
-
-        // Handle cases where no files are found
         if (!section.files.length) {
             throw new InternalServerError(`No files found for section ${sectionId}.`);
         }
 
-        return section.files; // Return only files, not the full course object
+        return section.files;
     }
+
 
 
     async FetchCourseContentById(courseId) {

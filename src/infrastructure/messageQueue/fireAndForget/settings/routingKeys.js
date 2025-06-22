@@ -17,7 +17,16 @@ const RoutingKeys = {
     COURSE_UPDATED: "course.updated",
     COURSE_DELETED: "course.deleted",
     COURSE_PUBLISHED: "course.published",
-    COURSE_ENROLLED: "course.enrolled",  // Matches course.enrolled.[any ID]
+    COURSE_REJECTED: "course.rejected",
+    COURSE_DRAFTED: "course.draft",
+    COURSE_PENDING: "course.pending",
+    COURSE_APPROVED: "course.approved",
+    COURSE_ARCHIVED: "course.archived",
+    COURSE_SUSPENDED: "course.suspended",
+    COURSE_UNDER_REVIEW: "course.under_review",
+    COURSE_EXPIRED: "course.expired",
+    COURSE_UNPUBLISHED: "course.unpublished",
+    COURSE_ENROLLED: "course.enrolled",
     COURSE_ALL_EVENTS: "course.#",
 
     // Payment-related events
