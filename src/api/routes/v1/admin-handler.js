@@ -43,8 +43,8 @@ router.put('/updateCourseStatus/:courseId', async (req, res, next) => {
 
 
         // Call the service method to delete the section
-        //  const sectionWithCourses = await adminService.updateCourseStatus(courseId);
-        const sectionWithCourses = true;
+        const sectionWithCourses = await adminService.updateCourseStatus(courseId, status);
+        //const sectionWithCourses = true;
         res.status(200).json(sectionWithCourses);
     } catch (err) {
         console.log("this is the error ", err);

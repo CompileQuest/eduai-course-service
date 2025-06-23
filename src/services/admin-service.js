@@ -153,7 +153,7 @@ class AdminService {
             switch (status) {
                 case COURSE_STATUS.PUBLISHED:
                     console.log("Changed Status to PUBLISHED!!", updatedCourse);
-                    //await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, updatedCourse);
+                    await rabbitMQClient.produce(RoutingKeys.COURSE_CREATED, updatedCourse);
                     break;
 
                 case COURSE_STATUS.REJECTED:

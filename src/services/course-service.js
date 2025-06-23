@@ -88,6 +88,8 @@ class CourseService {
             const courses = await this.repository.getLandingPageCourses(filter);
             console.log("Courses Fetched Successfully");
 
+            console.log("this is the cousre ", courses)
+
             // Return a success response using ResponseHelper
             return ResponseHelper.success('Courses Fetched Successfuly', courses);
         } catch (error) {

@@ -583,17 +583,31 @@ class CourseRepository {
 
 
     async getLandingPageCourses(filter = {}, limit = 10) {
-        return await this.prisma.course.findMany({
+        const pinnedCourseId = "2c2c0070-dbe8-4413-9845-e9d8a7fcf75b";
+
+        // Get the pinned course first (if it exists and not deleted)
+        const pinnedCourse = await this.prisma.course.findFirst({
             where: {
-                status: COURSE_STATUS.PUBLISHED, // Only published courses
-                // ...filter,  // Allow additional filters if passed
-                deletedAt: null, // Exclude soft-deleted courses
-            },
-            take: limit,
-            orderBy: {
-                createdAt: 'desc', // Optional: latest courses first
+                id: pinnedCourseId,
+                deletedAt: null,
             },
         });
+
+        // Get the rest of the courses, excluding the pinned one
+        const otherCourses = await this.prisma.course.findMany({
+            where: {
+                id: { not: pinnedCourseId },
+                deletedAt: null,
+                ...filter,
+            },
+            take: pinnedCourse ? limit - 1 : limit, // Reduce limit if pinnedCourse exists
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+
+        // Combine pinned + other courses (pinned first)
+        return pinnedCourse ? [pinnedCourse, ...otherCourses] : otherCourses;
     }
 
     async FetchAllCourses() {
@@ -761,30 +775,48 @@ class CourseRepository {
         }
     }
 
-    async FetchInstructorCoursesPaginated(instructorId, page, limit) {
-        // Ensure page and limit are numbers
-        page = parseInt(page, 10) || 1;
-        limit = parseInt(limit, 10) || 10;
+    async getLandingPageCourses(filter = {}, limit = 10) {
+        const pinnedCourseId = "2c2c0070-dbe8-4413-9845-e9d8a7fcf75b"; // Course that should appear first
 
-        const skip = (page - 1) * limit;
+        try {
+            // Get the pinned course first
+            const pinnedCourse = await this.prisma.course.findUnique({
+                where: {
+                    id: pinnedCourseId,
+                },
+            });
 
-        // Define the where condition for filtering courses
-        const where = { instructorId: instructorId };
+            // Get other courses, excluding the pinned one
+            const otherCourses = await this.prisma.course.findMany({
+                where: {
+                    id: {
+                        not: pinnedCourseId,
+                    },
+                    deletedAt: null,
+                    // Add safe optional filters below if needed:
+                    ...(filter.category && { category: filter.category }),
+                    ...(filter.instructorId && { instructorId: filter.instructorId }),
+                    ...(filter.status && { status: filter.status }),
+                    ...(filter.difficultyLevel && { difficultyLevel: filter.difficultyLevel }),
+                },
+                take: limit - (pinnedCourse ? 1 : 0), // adjust the number of remaining courses
+                orderBy: {
+                    createdAt: 'desc',
+                },
+            });
 
-        // Fetch courses and total count in parallel
-        const [courses, total] = await Promise.all([
-            this.prisma.course.findMany({
-                where,  // Apply filter
-                skip,
-                take: limit,
-                orderBy: { createdAt: 'desc' } // Sort by latest
-            }),
-            this.prisma.course.count({ where }) // Count total courses
-        ]);
+            const result = [];
+            if (pinnedCourse) {
+                result.push(pinnedCourse);
+            }
+            result.push(...otherCourses);
 
-        return { courses, total };
+            return result;
+        } catch (error) {
+            console.error("Error in getLandingPageCourses:", error);
+            throw error;
+        }
     }
-
 
     async DeleteCourseTemplate(courseId) {
         try {

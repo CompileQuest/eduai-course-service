@@ -16,9 +16,9 @@ router.get('/', (req, res) => {
 
 router.get('/:sectionid/file', async (req, res, next) => {
     try {
-        const { courseId, sectionid } = req.params;
+        const { sectionid } = req.params;
 
-        if (!courseId || !sectionid) {
+        if (!sectionid) {
             throw new BadRequestError("Invalid or missing inputs field");
         }
 
